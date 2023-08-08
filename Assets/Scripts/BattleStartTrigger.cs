@@ -42,9 +42,9 @@ public class BattleStartTrigger : MonoBehaviour
             //Camera.main.Render();
             //Camera.main.targetTexture = null;
             
-            BattleController.AddParticipant("Agatha", 999, 999, 1, 0);
+            BattleController.AddParticipant("Agatha", 10, 10, 1, 0);
             BattleController.AddParticipant("Faylee", 10, 10, 1, 0);
-            BattleController.AddParticipant("Jackalope", 999, 1, 0);
+            BattleController.AddParticipant("Jackalope", 10, 1, 0);
             Time.timeScale = 1;
             sceneBody = FindObjectOfType<BoxCollider2D>().gameObject;
             sceneBody.SetActive(false);

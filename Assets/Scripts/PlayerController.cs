@@ -20,10 +20,52 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Animator flipAnim;
     [SerializeField] Animator spriteAnim;
 
+    private Transform dustParticles;
+
+    [SerializeField] private GameObject hudBar;
+    private bool fader;
+
+        //setting up needed variables
     private void Start()
     {
         controller = gameObject.GetComponent<CharacterController>();
         cam = Camera.main.transform;
+        dustParticles = GetComponentInChildren<ParticleSystem>().gameObject.transform;
+    }
+
+    /// <summary>
+    /// Makes Hud visible or invisible based on activity of player
+    /// </summary>
+    /// <param name="fadeOut">If the Hud should fade away now or not</param>
+    /// <returns></returns>
+    IEnumerator HudDisplayTimer(bool fadeOut)
+    {
+        //fades in the hud
+        if(!fadeOut)
+        {
+            hudBar.SetActive(true);
+
+            //delay so it doesn't come on every time you stop
+            yield return new WaitForSeconds(2.5f);
+
+            while (hudBar.GetComponent<CanvasGroup>().alpha < 1)
+            {
+                hudBar.GetComponent<CanvasGroup>().alpha += 3 * Time.fixedDeltaTime;
+                yield return new WaitForSecondsRealtime(0.02f);
+            }
+        }
+        else
+        {
+            while (hudBar.GetComponent<CanvasGroup>().alpha > 0)
+            {
+                hudBar.GetComponent<CanvasGroup>().alpha -= 3 * Time.fixedDeltaTime;
+                yield return new WaitForSecondsRealtime(0.01f);//set to half the delay for a faster clean screen
+            }
+
+            hudBar.SetActive(false);
+        }
+
+        fader = false;
     }
 
     void Update()
@@ -42,8 +84,32 @@ public class PlayerController : MonoBehaviour
         {
             FlipAnimation(horizontal);
         }
+
+        if(!fader)
+        {
+            StopAllCoroutines();
+
+
+            if (horizontal == 0 && vertical == 0)
+            {
+                if (!hudBar.activeInHierarchy)
+                {
+                    fader = true;
+                    StartCoroutine(HudDisplayTimer(false));
+                }
+            }
+            else
+            {
+                if (hudBar.activeInHierarchy)
+                {
+                    fader = true;
+                    StartCoroutine(HudDisplayTimer(true));
+                }
+            }
+        }
         
-        if(horizontal != 0 || vertical != 0)
+
+        if (horizontal != 0 || vertical != 0)
         {
             if (vertical > 0)
                 spriteAnim.SetBool("FacingForward", false);
@@ -91,6 +157,8 @@ public class PlayerController : MonoBehaviour
                 flipAnim.SetBool("TurningLeft", false);
                 flipAnim.SetTrigger("Flip");
 
+                dustParticles.transform.position = new Vector3(.15f, dustParticles.transform.position.y, dustParticles.transform.position.z);
+
                 FacingRight = true;
             }
         }
@@ -100,6 +168,8 @@ public class PlayerController : MonoBehaviour
             {
                 flipAnim.SetBool("TurningLeft", true);
                 flipAnim.SetTrigger("Flip");
+
+                dustParticles.transform.position = new Vector3(-.15f, dustParticles.transform.position.y, dustParticles.transform.position.z);
 
                 FacingRight = false;
             }

@@ -51,7 +51,7 @@ public class BattleController : MonoBehaviour
     private bool damageFinished = false;
     private bool reduceDamage = false;
 
-    private int bonusDamage = 0;
+    private int successBonusDamage = 0;
         private bool canRotateIcons = true;
 
     //for retriggering animation loops
@@ -177,6 +177,50 @@ public class BattleController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        PlayerData.party.Add(new PartyStats("Agatha", 10, 1, 0));
+        PlayerData.party.Add(new PartyStats("Faylee", 10, 1, 0));
+        PlayerData.enchantments.Add(new Enchantment("Big Damage", "This does the big damages", 3, EnchantmentType.Attack, 3, EnchantmentTarget.Both));
+
+
+        int pattack = 0, pdef = 0, mattack = 0, mdef = 0;
+
+        for (int i = 0; i < PlayerData.enchantments.Count; i++)
+        {
+            if (PlayerData.enchantments[i].type == EnchantmentType.Attack)
+            {
+                if (PlayerData.enchantments[i].target == EnchantmentTarget.Main)
+                {
+                    mattack += PlayerData.enchantments[i].effectAmount;
+                }
+                else if(PlayerData.enchantments[i].target == EnchantmentTarget.Partner)
+                {
+                    pattack += PlayerData.enchantments[i].effectAmount;
+                }
+                else
+                {
+                    mattack += PlayerData.enchantments[i].effectAmount;
+                    pattack += PlayerData.enchantments[i].effectAmount;
+                }
+            }
+            else if (PlayerData.enchantments[i].type == EnchantmentType.Defense)
+            {
+                if (PlayerData.enchantments[i].target == EnchantmentTarget.Main)
+                {
+                    mdef += PlayerData.enchantments[i].effectAmount;
+                }
+                else if (PlayerData.enchantments[i].target == EnchantmentTarget.Partner)
+                {
+                    pdef += PlayerData.enchantments[i].effectAmount;
+                }
+                else
+                {
+                    mdef += PlayerData.enchantments[i].effectAmount;
+                    pdef += PlayerData.enchantments[i].effectAmount;
+                }
+            }
+
+
+        }
 
         //defaultFocus = zoomCam.LookAt.gameObject;
 
@@ -185,9 +229,11 @@ public class BattleController : MonoBehaviour
         //default if nothing is currently set
         if(participants.Count < 1)
         {
-            AddParticipant("Agatha", 999, 999, 1, 0);
-            AddParticipant("Faylee", 10, 10, 1, 0);
-            AddParticipant("Jackalope", 999, 1, 0);
+            AddParticipant(PlayerData.party[0], mattack, mdef);
+            AddParticipant(PlayerData.party[1], pattack, pdef);
+            //AddParticipant("Agatha", 10, 10, 1, 0);
+            //AddParticipant("Faylee", 10, 10, 1, 0);
+            AddParticipant("Jackalope", 10, 1, 0);
         }
 
         for (int i = 0; i < participants.Count; i++)
@@ -335,7 +381,7 @@ public class BattleController : MonoBehaviour
 
         anim.SetBool("Walking", true);
 
-        bonusDamage = 0;
+        successBonusDamage = 0;
 
         //anim.SetBool("Attacking", false);
         character.GetComponent<Animator>().SetTrigger("Flip");
@@ -384,7 +430,7 @@ public class BattleController : MonoBehaviour
             if (reduceDamage)
                 damageReduction = 1;
 
-            int damage = (bonusDamage + participants[2].attack) - (participants[0].defense + damageReduction);
+            int damage = (successBonusDamage + participants[2].attack) - (participants[0].defense + damageReduction);
             
             participants[0].currentHealth -= damage;
             mainHp.text = participants[0].currentHealth.ToString() + "/" + participants[0].maxHealth.ToString();
@@ -393,7 +439,7 @@ public class BattleController : MonoBehaviour
         }
         else
         {
-            int damage = (bonusDamage + participants[2].attack) - participants[0].defense;
+            int damage = (successBonusDamage + participants[0].attack) - participants[0].defense;
             participants[2].currentHealth -= damage;
             Debug.Log(participants[2].charName + " has taken " + damage);
 
@@ -410,9 +456,9 @@ public class BattleController : MonoBehaviour
     public void TriggerBattleAction(bool bonus)
     {
         if (bonus && currentTurn != CurrentTurn.Enemy1)
-            bonusDamage = 1;
+            successBonusDamage = 1;
         else
-            bonusDamage = 0;
+            successBonusDamage = 0;
 
         if(currentTurn == CurrentTurn.Main)
         {
@@ -539,8 +585,9 @@ public class BattleController : MonoBehaviour
         participants.Add(new BattleParticipant(name, maxHp, maxHp, atk, def));
     }
     //for player characters
-    public static void AddParticipant(string name)
+    public static void AddParticipant(PartyStats partyMember, int enchantmentAttack, int enchantmentDefense)
     {
+        participants.Add(new BattleParticipant(partyMember.charName, partyMember.maxHealth, partyMember.currentHealth, partyMember.baseDamage + enchantmentAttack, partyMember.defense + enchantmentDefense));
         //participants.Add(new BattleParticipant(name, maxHp, maxHp, atk, def));
     }
     
