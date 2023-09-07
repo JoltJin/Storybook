@@ -16,9 +16,9 @@ public class BattleStartTrigger : MonoBehaviour
 
     private static GameObject sceneBody;
 
-    //private RenderTexture screenshot;
+    private RenderTexture screenshot;
 
-    //[SerializeField] private Material screenshotMaterial;
+    [SerializeField] private Material screenshotMaterial;
 
     [SerializeField] private BattleSceneTypes battleToLoad;
 
@@ -26,9 +26,12 @@ public class BattleStartTrigger : MonoBehaviour
 
     private void Start()
     {
-        //screenshot = new RenderTexture(1920, 1080, 4);
+        screenshot = new RenderTexture(1920, 1080, 4);
 
-        //screenshotMaterial.SetTexture("_BaseMap", screenshot);
+        if (screenshotMaterial != null)
+        {
+            screenshotMaterial.SetTexture("_BaseMap", screenshot);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -38,13 +41,13 @@ public class BattleStartTrigger : MonoBehaviour
             instance = this;
             Time.timeScale = 0;
 
-            //Camera.main.targetTexture = screenshot;
-            //Camera.main.Render();
-            //Camera.main.targetTexture = null;
-            
+            Camera.main.targetTexture = screenshot;
+            Camera.main.Render();
+            Camera.main.targetTexture = null;
+
             BattleController.AddParticipant("Agatha", 10, 10, 1, 0);
             BattleController.AddParticipant("Faylee", 10, 10, 1, 0);
-            BattleController.AddParticipant("Jackalope", 10, 1, 0);
+            BattleController.AddParticipant("Jackalope", 3, 1, 0);
             Time.timeScale = 1;
             sceneBody = FindObjectOfType<BoxCollider2D>().gameObject;
             sceneBody.SetActive(false);

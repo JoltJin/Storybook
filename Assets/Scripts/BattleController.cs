@@ -347,6 +347,21 @@ public class BattleController : MonoBehaviour
         //    Debug.Log(name + " attacked");
         //}
 
+
+        if (currentTurn != CurrentTurn.Enemy1)
+        {
+            actionCommand.ActivateActionCommand(destination);
+
+            if(currentTurn == CurrentTurn.Main)
+            {
+                actionCommand.HoldLeft();
+            }
+            else
+            {
+                actionCommand.TimedA();
+            }
+        }
+
         yield return new WaitForSeconds(0.5f);// delay before starting to walk to target
 
         anim.SetBool("Walking", true);
@@ -359,12 +374,11 @@ public class BattleController : MonoBehaviour
         }
         anim.SetBool("Walking", false);
         anim.SetTrigger("Attacking");
-        Debug.Log("here");
 
-        if(currentTurn != CurrentTurn.Enemy1)
-        {
-            actionCommand.ActivateActionCommand(character.transform.position.x);
-        }
+        //if(currentTurn != CurrentTurn.Enemy1)
+        //{
+        //    actionCommand.ActivateActionCommand(character.transform.position.x);
+        //}
         if (attackFinished) Debug.Log("Finished Early somehow");
         yield return new WaitUntil(() => attackFinished);
         //while (!attackFinished)

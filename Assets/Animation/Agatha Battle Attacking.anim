@@ -59,7 +59,7 @@ AnimationClip:
       value: {fileID: 8702217765024528002, guid: 3d3652533428b1245844b9a70f437d38, type: 3}
     - time: 0.16666667
       value: {fileID: 3885745321567015098, guid: 3d3652533428b1245844b9a70f437d38, type: 3}
-    - time: 0.41666666
+    - time: 0.29166666
       value: {fileID: 3885745321567015098, guid: 3d3652533428b1245844b9a70f437d38, type: 3}
     attribute: m_Sprite
     path: 
@@ -76,7 +76,7 @@ AnimationClip:
     path: Weapon
     classID: 212
     script: {fileID: 0}
-  m_SampleRate: 12
+  m_SampleRate: 24
   m_WrapMode: 0
   m_Bounds:
     m_Center: {x: 0, y: 0, z: 0}
@@ -117,7 +117,7 @@ AnimationClip:
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 0.5
+    m_StopTime: 0.3333333
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -248,7 +248,7 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
-  - time: 0.41666666
+  - time: 0.20833333
     functionName: DamageEnemy
     data: 
     objectReferenceParameter: {fileID: 0}

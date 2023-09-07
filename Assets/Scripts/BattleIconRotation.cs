@@ -65,6 +65,10 @@ public class BattleIconRotation : MonoBehaviour
     {
         if (moving)
             return;
+
+        int infront = 0;
+        float checker = 5;
+
         for (int i = 0; i < positions.Length; i++)
         {
 
@@ -76,13 +80,34 @@ public class BattleIconRotation : MonoBehaviour
             {
                 positions[i] = icons[i + 1].transform.localPosition;
             }
+
+            if(checker < positions[i].x)
+            {
+                checker = positions[i].x;
+                infront = i;
+            }
+
         }
 
         moving = true;
 
-        foreach (SpriteRenderer sprite in icons[0].GetComponentsInChildren<SpriteRenderer>())
+        for (int i = 0; i < positions.Length; i++)
         {
-            sprite.sortingOrder += 2;
+            if(i == infront)
+            {
+                foreach (SpriteRenderer sprite in icons[infront].GetComponentsInChildren<SpriteRenderer>())
+                {
+                    sprite.sortingOrder += 2;
+                }
+            }
+            else
+            {
+                foreach (SpriteRenderer sprite in icons[i].GetComponentsInChildren<SpriteRenderer>())
+                {
+                    sprite.sortingOrder--;
+                }
+            }
+
         }
 
         StartCoroutine(MoveIcons(0));
@@ -92,6 +117,10 @@ public class BattleIconRotation : MonoBehaviour
     {
         if (moving)
             return;
+
+        int behind = 0;
+        float checker = 5;
+
         for (int i = 0; i < positions.Length; i++)
         {
 
@@ -103,14 +132,39 @@ public class BattleIconRotation : MonoBehaviour
             {
                 positions[i] = icons[i - 1].transform.localPosition;
             }
+
+            if (checker > positions[i].x)
+            {
+                checker = positions[i].x;
+                behind = i;
+            }
+        }
+
+        for (int i = 0; i < positions.Length; i++)
+        {
+            if (i == behind)
+            {
+                foreach (SpriteRenderer sprite in icons[behind].GetComponentsInChildren<SpriteRenderer>())
+                {
+                    sprite.sortingOrder -= 2;
+                }
+            }
+            else
+            {
+                foreach (SpriteRenderer sprite in icons[i].GetComponentsInChildren<SpriteRenderer>())
+                {
+                    sprite.sortingOrder++;
+                }
+            }
+
         }
 
         moving = true;
 
-        foreach (SpriteRenderer sprite in icons[icons.Length - 1].GetComponentsInChildren<SpriteRenderer>())
-        {
-            sprite.sortingOrder -= 2;
-        }
+        //foreach (SpriteRenderer sprite in icons[icons.Length - 1].GetComponentsInChildren<SpriteRenderer>())
+        //{
+        //    sprite.sortingOrder -= 2;
+        //}
         StartCoroutine(MoveIcons(icons.Length - 1));
     }
 

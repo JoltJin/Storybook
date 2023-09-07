@@ -5,10 +5,14 @@ using UnityEngine;
 public class ActionCommandController : MonoBehaviour
 {
     [SerializeField] private GameObject greenLight;
+    [SerializeField] private Sprite[] greenLights = new Sprite[2];
     [SerializeField] private GameObject yellowLight;
+    [SerializeField] private Sprite[] yellowLights = new Sprite[2];
     [SerializeField] private GameObject RedLight;
-    [SerializeField] private GameObject successLight;
-    [SerializeField] private GameObject failureLight;
+    [SerializeField] private Sprite[] redLights = new Sprite[2];
+    [SerializeField] private GameObject[] successLight = new GameObject[2];
+    [SerializeField] private Sprite[] successLights = new Sprite[3];
+    //[SerializeField] private GameObject failureLight;
     [SerializeField] private Animator actionIcon;
     [SerializeField] private BattleController battleController;
 
@@ -22,6 +26,8 @@ public class ActionCommandController : MonoBehaviour
 
     private bool endAction = false;
     internal bool chainAttack;
+    private bool flashing;
+    private bool properlyCharged = false;
 
     public void HoldLeft()
     {
@@ -112,7 +118,8 @@ public class ActionCommandController : MonoBehaviour
 
     private void HoldLeftBaseLighter()
     {
-        
+        //properlyCharged = false;
+
         if (Input.GetAxisRaw("Horizontal") < 0)
         {
             counter += Time.deltaTime;
@@ -125,36 +132,38 @@ public class ActionCommandController : MonoBehaviour
         else if (Input.GetAxisRaw("Horizontal") >= 0 && actionIcon.GetBool("Is Pressed"))
         {
             actionIcon.SetBool("Is Pressed", false);
-            actionIcon.SetTrigger("Reset");
+            //actionIcon.SetTrigger("Reset");
             counter = 0;
         }
 
         if (counter >= firstCheck)
         {
-            greenLight.SetActive(true);
+            //greenLight.SetActive(true);
+            greenLight.GetComponent<SpriteRenderer>().sprite = greenLights[1];
         }
         if (counter >= secondCheck)
         {
-            yellowLight.SetActive(true);
+            yellowLight.GetComponent<SpriteRenderer>().sprite = yellowLights[1];
         }
         if (counter >= thirdCheck)
         {
-            RedLight.SetActive(true);
+            RedLight.GetComponent<SpriteRenderer>().sprite = redLights[1];
         }
-        if (counter >= finalCheck)
+        if (counter >= finalCheck && !flashing)
         {
-            successLight.SetActive(true);
-            endAction = true;
+            //successLight[0].GetComponent<SpriteRenderer>().sprite = successLights[1];
+            StartCoroutine(ChargeFlasher());
         }
-        else if (counter < firstCheck && greenLight.activeInHierarchy && !successLight.activeInHierarchy)
+        else if (counter < finalCheck)
         {
-            failureLight.SetActive(true);
-            endAction = true;
+            //failureLight.SetActive(true);
         }
 
-        if (endAction && Input.GetAxisRaw("Horizontal") >= 0)
+        if (greenLight.GetComponent<SpriteRenderer>().sprite == greenLights[1] && Input.GetAxisRaw("Horizontal") >= 0)
         {
-            TriggerBattle(successLight.activeInHierarchy);
+            Debug.Log("ended");
+            TriggerBattle(properlyCharged);
+            StopAllCoroutines();
             //if ()
             //{
             //    TriggerBattle(2);
@@ -166,20 +175,53 @@ public class ActionCommandController : MonoBehaviour
         }
     }
 
+    IEnumerator ChargeFlasher()
+    {
+        Debug.Log("flashing started");
+        flashing = true;
+        properlyCharged = true;
+        float flasher = .2f;
+        float maxCharge = flasher * 50;
+
+        for (int i = 0; i < maxCharge; i++)
+        {
+            if (successLight[0].GetComponent<SpriteRenderer>().sprite == successLights[1])
+            {
+                successLight[0].GetComponent<SpriteRenderer>().sprite = successLights[2];
+                successLight[1].GetComponent<SpriteRenderer>().sprite = successLights[2];
+            }
+            else
+            {
+                successLight[0].GetComponent<SpriteRenderer>().sprite = successLights[1];
+                successLight[1].GetComponent<SpriteRenderer>().sprite = successLights[1];
+            }
+            yield return new WaitForSeconds(flasher);
+        }
+        properlyCharged = false;
+    }
+
     private void TriggerBattle(bool bonus)
     {
         battleController.TriggerBattleAction(bonus);
         DeactivateActionCommand();
-        endAction = false;
     }
 
     private void ResetObjects()
     {
-        greenLight.SetActive(false);
-        yellowLight.SetActive(false);
-        RedLight.SetActive(false);
-        successLight.SetActive(false);
-        failureLight.SetActive(false);
+        greenLight.GetComponent<SpriteRenderer>().sprite = greenLights[0];
+        yellowLight.GetComponent<SpriteRenderer>().sprite = yellowLights[0];
+        RedLight.GetComponent<SpriteRenderer>().sprite = redLights[0];
+        successLight[0].GetComponent<SpriteRenderer>().sprite = successLights[0];
+        successLight[1].GetComponent<SpriteRenderer>().sprite = successLights[0];
+
+        //greenLight.SetActive(false);
+        //yellowLight.SetActive(false);
+        //RedLight.SetActive(false);
+        //successLight[0].SetActive(false);
+        //successLight[1].SetActive(false);
+        //failureLight.SetActive(false);
+        flashing = false;
+        properlyCharged= false;
         //actionIcon.gameObject.SetActive(false);
     }
 }

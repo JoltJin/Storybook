@@ -44,6 +44,9 @@ public class PartyStats
     public int defense;
     public Status status = Status.Normal;
 
+    public int currentLevel = 1;
+    public int currentExp = 0;
+
     public PartyStats(string name, int health, int attack, int defense)
     {
         charName = name;
