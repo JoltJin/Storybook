@@ -31,7 +31,6 @@ public class ActionCommandController : MonoBehaviour
 
     public void HoldLeft()
     {
-        Debug.Log("Hold Left");
         GetComponent<Animator>().SetBool("DisplayAction", true);
         chargeBody.SetActive(true);
         child.SetActive(true);
@@ -161,7 +160,7 @@ public class ActionCommandController : MonoBehaviour
 
         if (greenLight.GetComponent<SpriteRenderer>().sprite == greenLights[1] && Input.GetAxisRaw("Horizontal") >= 0)
         {
-            Debug.Log("ended");
+            //Debug.Log("ended");
             TriggerBattle(properlyCharged);
             StopAllCoroutines();
             //if ()
@@ -177,7 +176,7 @@ public class ActionCommandController : MonoBehaviour
 
     IEnumerator ChargeFlasher()
     {
-        Debug.Log("flashing started");
+        //Debug.Log("flashing started");
         flashing = true;
         properlyCharged = true;
         float flasher = .2f;

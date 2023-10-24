@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, CharacterAnimator
 {
     private CharacterController controller;
     private Vector3 playerVelocity;
@@ -107,23 +108,9 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
-        
 
-        if (horizontal != 0 || vertical != 0)
-        {
-            if (vertical > 0)
-                spriteAnim.SetBool("FacingForward", false);
-            else if (vertical <= 0)
-                spriteAnim.SetBool("FacingForward", true);
 
-            spriteAnim.SetBool("isWalking", true);
-            IsMoving = true;
-        }
-        else
-        {
-            spriteAnim.SetBool("isWalking", false);
-            IsMoving = false;
-        }
+        BasicAnimations(horizontal, vertical);
 
 
         if (direction.magnitude >= 0.1f)
@@ -148,7 +135,8 @@ public class PlayerController : MonoBehaviour
         controller.Move(playerVelocity * Time.deltaTime);
     }
 
-    private void FlipAnimation(float direction)
+
+    public void FlipAnimation(float direction)
     {
         if (direction > 0)
         {
@@ -176,5 +164,33 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void Talking()
+    {
+        spriteAnim.SetBool("isTalking", true);
+    }
 
+    public void StopTalking()
+    {
+        spriteAnim.SetBool("isTalking", false);
+    }
+
+
+    public void BasicAnimations(float horizontal, float vertical)
+    {
+        if (horizontal != 0 || vertical != 0)
+        {
+            if (vertical > 0)
+                spriteAnim.SetBool("FacingForward", false);
+            else if (vertical <= 0)
+                spriteAnim.SetBool("FacingForward", true);
+
+            spriteAnim.SetBool("isWalking", true);
+            IsMoving = true;
+        }
+        else
+        {
+            spriteAnim.SetBool("isWalking", false);
+            IsMoving = false;
+        }
+    }
 }

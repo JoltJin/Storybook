@@ -23,7 +23,7 @@ public class DistanceToScreenSorter : MonoBehaviour
 
         }
         //sprite = GetComponent<SpriteRenderer>();
-        spriteNum.sortingOrder = (int)Vector3.Dot(transform.position, Camera.main.transform.position);
+        spriteNum.sortingOrder = -(int)(Vector3.Distance(transform.position, Camera.main.transform.position) *10); //(int)Vector3.Dot(transform.position, Camera.main.transform.position);
         StartCoroutine(CheckDistanceFromScreen());
     }
 
@@ -34,7 +34,7 @@ public class DistanceToScreenSorter : MonoBehaviour
 
         if(spriteNum.isVisible)
         {
-            spriteNum.sortingOrder = (int)Vector3.Dot(transform.position, Camera.main.transform.position);
+            spriteNum.sortingOrder = -(int)(Vector3.Distance(transform.position, Camera.main.transform.position) * 10);
         }
         StartCoroutine(CheckDistanceFromScreen());
     }

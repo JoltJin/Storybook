@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: 08b61a52a6bbea649a5f731505707a45
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Storybook Agatha Text
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 7a583179ce6b7d9488e4665b303ebe40, type: 3}
+  - {fileID: 12800000, guid: ffc5ed875e01d244e843ed138a26225c, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

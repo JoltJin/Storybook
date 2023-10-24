@@ -59,6 +59,18 @@ TextureImporter:
   - first:
       213: -3354007866328986175
     second: Agatha Guard 2
+  - first:
+      213: -636207610985712953
+    second: Agatha Idle Backward 1
+  - first:
+      213: -4288679618773226387
+    second: Agatha Idle Backward 2
+  - first:
+      213: 2287247726433546076
+    second: Agatha Idle Backward 3
+  - first:
+      213: 5527543414122192011
+    second: Agatha Talking 1
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -542,6 +554,90 @@ TextureImporter:
       bones: []
       spriteID: 1cd4899ad9b2471d0800000000000000
       internalID: -3354007866328986175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Agatha Idle Backward 1
+      rect:
+        serializedVersion: 2
+        x: 1216
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7c2fbcf6c8cbb27f0800000000000000
+      internalID: -636207610985712953
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Agatha Idle Backward 2
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d6c609feb9c8b74c0800000000000000
+      internalID: -4288679618773226387
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Agatha Idle Backward 3
+      rect:
+        serializedVersion: 2
+        x: 1344
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c5f246750bfedbf10800000000000000
+      internalID: 2287247726433546076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Agatha Talking 1
+      rect:
+        serializedVersion: 2
+        x: 1408
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b8c9d4fe277c5bc40800000000000000
+      internalID: 5527543414122192011
       vertices: []
       indices: 
       edges: []

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UIElements;
 using static UnityEditor.PlayerSettings;
 
 public class BattleController : MonoBehaviour
@@ -25,6 +26,7 @@ public class BattleController : MonoBehaviour
         public string charName;
         public int maxHealth, currentHealth, attack, defense;
         public Vector3 homePosition;
+        public GameObject character;
 
 
         public BattleParticipant(string name, int maxHp, int currentHp, int atk, int def)
@@ -34,6 +36,11 @@ public class BattleController : MonoBehaviour
             currentHealth = currentHp;
             attack = atk;
             defense = def;
+        }
+
+        public void SetParticipantObject(GameObject character)
+        {
+            this.character = character;
         }
     }
 
@@ -60,11 +67,12 @@ public class BattleController : MonoBehaviour
 
     [SerializeField] private GameObject zoomCam;
     [SerializeField] private CinemachineTargetGroup targetGroup;
+    [SerializeField] private Transform expEndLocation;
+    [SerializeField] private GameObject expPrefab;
+    [SerializeField] private TextMeshProUGUI expText;
 
-    public void AttackFinisher()
-    {
-        attackFinished = true;
-    }
+    [SerializeField] GameObject battleObjectHolder;
+    [SerializeField] private Animator bookAnim;
 
     private bool canDefend = false;
     [SerializeField] private float walkingRate = 4;
@@ -75,6 +83,164 @@ public class BattleController : MonoBehaviour
     int damageBuildupAmount = 0;
     public GameObject damageBarIcon;
     public GameObject damageNumberIcon;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        if(battleObjectHolder != null) { battleObjectHolder.SetActive(false); }
+
+        PlayerData.party.Add(new PartyStats("Agatha", 10, 1, 0));
+        PlayerData.party.Add(new PartyStats("Faylee", 10, 1, 0));
+        PlayerData.enchantments.Add(new Enchantment("Big Damage", "This does the big damages", 3, EnchantmentType.Attack, 3, EnchantmentTarget.Both));
+
+
+        int pattack = 0, pdef = 0, mattack = 0, mdef = 0;
+
+        for (int i = 0; i < PlayerData.enchantments.Count; i++)
+        {
+            if (PlayerData.enchantments[i].type == EnchantmentType.Attack)
+            {
+                if (PlayerData.enchantments[i].target == EnchantmentTarget.Main)
+                {
+                    mattack += PlayerData.enchantments[i].effectAmount;
+                }
+                else if(PlayerData.enchantments[i].target == EnchantmentTarget.Partner)
+                {
+                    pattack += PlayerData.enchantments[i].effectAmount;
+                }
+                else
+                {
+                    mattack += PlayerData.enchantments[i].effectAmount;
+                    pattack += PlayerData.enchantments[i].effectAmount;
+                }
+            }
+            else if (PlayerData.enchantments[i].type == EnchantmentType.Defense)
+            {
+                if (PlayerData.enchantments[i].target == EnchantmentTarget.Main)
+                {
+                    mdef += PlayerData.enchantments[i].effectAmount;
+                }
+                else if (PlayerData.enchantments[i].target == EnchantmentTarget.Partner)
+                {
+                    pdef += PlayerData.enchantments[i].effectAmount;
+                }
+                else
+                {
+                    mdef += PlayerData.enchantments[i].effectAmount;
+                    pdef += PlayerData.enchantments[i].effectAmount;
+                }
+            }
+
+
+        }
+
+        //defaultFocus = zoomCam.LookAt.gameObject;
+
+        BattleLocationPoints points = FindObjectOfType<BattleLocationPoints>();
+
+        //default if nothing is currently set
+        if(participants.Count < 1)
+        {
+            AddParticipant(PlayerData.party[0], mattack, mdef);
+            AddParticipant(PlayerData.party[1], pattack, pdef);
+            //AddParticipant("Agatha", 10, 10, 1, 0);
+            //AddParticipant("Faylee", 10, 10, 1, 0);
+            AddParticipant("Jackalope", 5, 1, 0);
+        }
+
+        for (int i = 0; i < participants.Count; i++)
+        {
+            participants[i].homePosition = points.GetLocation(i);
+            participants[i].SetParticipantObject(GameObject.Find(participants[i].charName));
+            participants[i].character.transform.position = participants[i].homePosition;
+            //GameObject.Find(participants[i].charName).transform.position = participants[i].homePosition;
+
+            if(participants[i].charName == "Agatha")
+            {
+                mainHp.text = participants[i].currentHealth.ToString() + "/" + participants[i].maxHealth.ToString();
+            }
+            else if(participants[i].charName == "Faylee")
+            {
+                partnerHp.text = participants[i].currentHealth.ToString() + "/" + participants[i].maxHealth.ToString();
+            }
+        }
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if(Input.GetButtonDown("Action1"))
+        {
+            if(battleIcons.CanSelectOption)
+            {
+                if(battleIcons.GetSlot() == IconType.Main_Attack)
+                {
+                    if (currentTurn == CurrentTurn.Main)
+                    {
+                        StartCoroutine(MoveParticipant(participants[0]));
+                    }
+                    else if (currentTurn == CurrentTurn.Partner)
+                    {
+                        StartCoroutine(MoveParticipant(participants[1]));
+                    }
+                    else
+                    {
+                        //StartCoroutine(MoveParticipant("Jackalope"));
+                    }
+                }
+            }
+            if(canDefend)
+            {
+                Debug.Log("Set up defend animation junk");
+                spriteAnim.SetTrigger("Guarding");
+                reduceDamage = true;
+            }
+            //else if(chainAttack)
+            //{
+            //    Debug.Log("Chained");
+            //    spriteAnim.SetTrigger("Attacking");
+            //}
+        }
+        else if(Input.GetButtonUp("Action1"))
+        {
+            //Debug.Log("End defending");
+            reduceDamage = false;
+        }
+        else if (!battleIcons.moving && canRotateIcons)
+        {
+            if (battleIcons.CanSelectOption)
+            {
+                if (Input.GetAxisRaw("Horizontal") < 0 || Input.GetAxisRaw("Vertical") < 0)
+                {
+                    battleIcons.RotateCounterclockwise();
+                }
+                else if (Input.GetAxisRaw("Horizontal") > 0 || Input.GetAxisRaw("Vertical") > 0)
+                {
+                    battleIcons.RotateClockwise();
+                }
+            }
+               
+        }
+    }
+
+    public void StartBattle()
+    {
+        if (battleObjectHolder == null || bookAnim == null)
+        {
+            Debug.Log("Not assigned");
+        }
+        else
+        {
+            battleObjectHolder.SetActive(true);
+            bookAnim.SetTrigger("BattleOpen");
+        }
+    }
+
+    public void AttackFinisher()
+    {
+        attackFinished = true;
+    }
 
 
     Vector3 RandomCircle(Vector3 center, float radius, int a)
@@ -103,7 +269,7 @@ public class BattleController : MonoBehaviour
         {
             zoomCam.SetActive(true);
             //CinemachineTargetGroup newGroup = GetComponent<CinemachineTargetGroup>();
-            Debug.Log(focus1 + " " + focus2);
+            //Debug.Log(focus1 + " " + focus2);
             targetGroup.m_Targets = new CinemachineTargetGroup.Target[0];
             targetGroup.AddMember(focus1.transform, 1f, 1f);
             targetGroup.AddMember(focus2.transform, 1f, 1f);
@@ -173,143 +339,70 @@ public class BattleController : MonoBehaviour
 
         Destroy(locationHolder);
     }
-
-    // Start is called before the first frame update
-    void Start()
+    IEnumerator SpawnEXP(int numberOfExp)
     {
-        PlayerData.party.Add(new PartyStats("Agatha", 10, 1, 0));
-        PlayerData.party.Add(new PartyStats("Faylee", 10, 1, 0));
-        PlayerData.enchantments.Add(new Enchantment("Big Damage", "This does the big damages", 3, EnchantmentType.Attack, 3, EnchantmentTarget.Both));
-
-
-        int pattack = 0, pdef = 0, mattack = 0, mdef = 0;
-
-        for (int i = 0; i < PlayerData.enchantments.Count; i++)
+        int currentExp = 0;
+        while (currentExp < numberOfExp)
         {
-            if (PlayerData.enchantments[i].type == EnchantmentType.Attack)
-            {
-                if (PlayerData.enchantments[i].target == EnchantmentTarget.Main)
-                {
-                    mattack += PlayerData.enchantments[i].effectAmount;
-                }
-                else if(PlayerData.enchantments[i].target == EnchantmentTarget.Partner)
-                {
-                    pattack += PlayerData.enchantments[i].effectAmount;
-                }
-                else
-                {
-                    mattack += PlayerData.enchantments[i].effectAmount;
-                    pattack += PlayerData.enchantments[i].effectAmount;
-                }
-            }
-            else if (PlayerData.enchantments[i].type == EnchantmentType.Defense)
-            {
-                if (PlayerData.enchantments[i].target == EnchantmentTarget.Main)
-                {
-                    mdef += PlayerData.enchantments[i].effectAmount;
-                }
-                else if (PlayerData.enchantments[i].target == EnchantmentTarget.Partner)
-                {
-                    pdef += PlayerData.enchantments[i].effectAmount;
-                }
-                else
-                {
-                    mdef += PlayerData.enchantments[i].effectAmount;
-                    pdef += PlayerData.enchantments[i].effectAmount;
-                }
-            }
+            currentExp++;
+            GameObject exp = Instantiate(expPrefab, participants[2].character.transform.GetChild(1).transform.position, Quaternion.identity);
 
+            float randX = Random.Range(0f, 4f);
+            float randY = Random.Range(0f, 4f);
+            StartCoroutine(EXPCurve(exp, 1f, exp.transform.position, new Vector3(randX, randY, exp.transform.position.z), new Vector3(3f, 4f, 1)));
 
-        }
-
-        //defaultFocus = zoomCam.LookAt.gameObject;
-
-        BattleLocationPoints points = FindObjectOfType<BattleLocationPoints>();
-
-        //default if nothing is currently set
-        if(participants.Count < 1)
-        {
-            AddParticipant(PlayerData.party[0], mattack, mdef);
-            AddParticipant(PlayerData.party[1], pattack, pdef);
-            //AddParticipant("Agatha", 10, 10, 1, 0);
-            //AddParticipant("Faylee", 10, 10, 1, 0);
-            AddParticipant("Jackalope", 10, 1, 0);
-        }
-
-        for (int i = 0; i < participants.Count; i++)
-        {
-            participants[i].homePosition = points.GetLocation(i);
-            GameObject.Find(participants[i].charName).transform.position = participants[i].homePosition;
-            if(participants[i].charName == "Agatha")
-            {
-                mainHp.text = participants[i].currentHealth.ToString() + "/" + participants[i].maxHealth.ToString();
-            }
-            else if(participants[i].charName == "Faylee")
-            {
-                partnerHp.text = participants[i].currentHealth.ToString() + "/" + participants[i].maxHealth.ToString();
-            }
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    IEnumerator EXPCurve(GameObject expIcon, float time, Vector3 pos0, Vector3 pos1, Vector3 pos2)
     {
-        if(Input.GetButtonDown("Action1"))
+        float timer = 0f;
+
+        while(timer < time)
         {
-            if(battleIcons.CanSelectOption)
-            {
-                if(battleIcons.GetSlot() == IconType.Main_Attack)
-                {
-                    if (currentTurn == CurrentTurn.Main)
-                    {
-                        StartCoroutine(MoveParticipant("Agatha"));
-                    }
-                    else if (currentTurn == CurrentTurn.Partner)
-                    {
-                        StartCoroutine(MoveParticipant("Faylee"));
-                    }
-                    else
-                    {
-                        //StartCoroutine(MoveParticipant("Jackalope"));
-                    }
-                }
-            }
-            if(canDefend)
-            {
-                Debug.Log("Set up defend animation junk");
-                spriteAnim.SetTrigger("Guarding");
-                reduceDamage = true;
-            }
-            //else if(chainAttack)
-            //{
-            //    Debug.Log("Chained");
-            //    spriteAnim.SetTrigger("Attacking");
-            //}
+            timer += Time.deltaTime * 2;
+            Vector3 location = Mathf.Pow(1 - timer, 2) * pos0 + 2 * (1 - timer) * timer * pos1 + Mathf.Pow(timer, 2) * pos2;
+                
+            expIcon.transform.position = location;
+
+            yield return new WaitForEndOfFrame();
         }
-        else if(Input.GetButtonUp("Action1"))
-        {
-            Debug.Log("End defending");
-            reduceDamage = false;
-        }
-        else if (!battleIcons.moving && canRotateIcons)
-        {
-            if (battleIcons.CanSelectOption)
-            {
-                if (Input.GetAxisRaw("Horizontal") < 0 || Input.GetAxisRaw("Vertical") < 0)
-                {
-                    battleIcons.RotateCounterclockwise();
-                }
-                else if (Input.GetAxisRaw("Horizontal") > 0 || Input.GetAxisRaw("Vertical") > 0)
-                {
-                    battleIcons.RotateClockwise();
-                }
-            }
-               
-        }
+
+        PlayerData.party[0].currentExp++;
+        
+        expText.text = "x" + PlayerData.party[0].currentExp;
+
+        Destroy(expIcon);
     }
 
-    /// <param name="name">Name of Participant</param>
-    IEnumerator MoveParticipant(string name)
+    //IEnumerator EXPCurve(GameObject expIcon)
+    //{
+    //    float centerOffset = 1f; //Random.Range(-3.5f, 3.5f);
+
+    //    Vector3 startPos = expIcon.transform.position;
+    //    Vector3 endPos = new Vector3(3f, 4f, 1);//expEndLocation.transform.position;
+
+    //    Vector3 centerPivot = (startPos + endPos) * 0.5f;
+    //    centerPivot -= new Vector3(0, -centerOffset);
+
+    //    Vector3 startRelativeCenter = startPos - centerPivot;
+    //    Vector3 endRelativeCenter = endPos - centerPivot;
+
+    //    float time = 0;
+    //    float duration = 1;
+    //    while (time < duration / 2)
+    //    {//expIcon.transform.localPosition, positions[i], time / duration
+    //        expIcon.transform.localPosition = Vector3.Slerp(expIcon.transform.position, endPos, time / duration);
+    //        time += Time.deltaTime;
+
+    //        yield return null;
+    //    }
+    //    //yield return new WaitForSeconds(0.01f);
+    //}
+
+    /// <param name="target">Participant moving</param>
+    IEnumerator MoveParticipant(BattleParticipant target)
     {
         attackFinished = false;
         damageFinished = false;
@@ -322,19 +415,19 @@ public class BattleController : MonoBehaviour
 
         Vector3 moveTo;
 
-        GameObject character = GameObject.Find(name);
+        GameObject character = target.character;
 
         Animator anim = character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>();
 
         if (currentTurn == CurrentTurn.Enemy1)
         {
-            destination = GameObject.Find("Agatha").transform.position.x + 1;
-            spriteAnim = GameObject.Find("Agatha").transform.GetChild(0).GetComponent<Animator>();
+            destination = participants[0].character.transform.position.x + 1; //GameObject.Find("Agatha").transform.position.x + 1;
+            spriteAnim = participants[0].character.transform.GetChild(0).GetComponent<Animator>();
         }
         else
         {
-            destination = GameObject.Find("Jackalope").transform.position.x - 1;
-            SetCamFocus(character, GameObject.Find("Jackalope"));
+            destination = participants[2].character.transform.position.x - 1; //GameObject.Find("Jackalope").transform.position.x - 1;
+            SetCamFocus(character, participants[2].character);
         }
         //if(name != "Agatha" && name != "Faylee")
         //{
@@ -401,14 +494,16 @@ public class BattleController : MonoBehaviour
         character.GetComponent<Animator>().SetTrigger("Flip");
         character.GetComponent<Animator>().SetBool("TurningLeft", true);
 
-        for (int i = 0; i < participants.Count; i++)
-        {
-            if (participants[i].charName == name)
-            {
-                destination = participants[i].homePosition.x;
-                break;
-            }
-        }
+
+        destination = target.homePosition.x;
+        //for (int i = 0; i < participants.Count; i++)
+        //{
+        //    if (participants[i].charName == name)
+        //    {
+        //        destination = participants[i].homePosition.x;
+        //        break;
+        //    }
+        //}
 
         while (character.transform.position.x != destination)
         {
@@ -432,7 +527,11 @@ public class BattleController : MonoBehaviour
 
         if (participants[2].currentHealth <= 0)
         {
-            FindObjectOfType<BattleStartTrigger>().EndBattle();
+            StartCoroutine(SpawnEXP(5));
+            Debug.Log("here 1");
+            participants[2].character.GetComponent<Animator>().SetTrigger("isDead");
+            participants[2].character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().SetBool("isDead", true);
+            //FindObjectOfType<BattleStartTrigger>().EndBattle();
         }
     }
     public void TakeDamage()
@@ -461,7 +560,11 @@ public class BattleController : MonoBehaviour
 
             if (participants[2].currentHealth <= 0)
             {
-                FindObjectOfType<BattleStartTrigger>().EndBattle();
+                StartCoroutine(SpawnEXP(5));
+                Debug.Log("here 2");
+                participants[2].character.GetComponent<Animator>().SetTrigger("isDead");
+                participants[2].character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().SetBool("isDead", true);
+                //FindObjectOfType<BattleStartTrigger>().EndBattle();
             }
         }
     }
@@ -476,7 +579,8 @@ public class BattleController : MonoBehaviour
 
         if(currentTurn == CurrentTurn.Main)
         {
-            GameObject.Find("Agatha").transform.GetChild(0).GetComponent<Animator>().SetTrigger("AttackCharged");
+            participants[0].character.transform.GetChild(0).GetComponent<Animator>().SetTrigger("AttackCharged");
+            //GameObject.Find("Agatha").transform
         }
 
         AttackFinisher();
@@ -488,19 +592,19 @@ public class BattleController : MonoBehaviour
         {
             currentTurn = CurrentTurn.Partner;
 
-            battleIcons.transform.position = new Vector3(GameObject.Find("Faylee").transform.position.x, battleIcons.transform.position.y, battleIcons.transform.position.z);
+            battleIcons.transform.position = new Vector3(participants[1].character.transform.position.x, battleIcons.transform.position.y, battleIcons.transform.position.z);
             LowerIcons();
         }
         else if (currentTurn == CurrentTurn.Partner)
         {
             currentTurn = CurrentTurn.Enemy1;
-            StartCoroutine(MoveParticipant("Jackalope"));
+            StartCoroutine(MoveParticipant(participants[2]));
         }
         else
         {
             currentTurn = CurrentTurn.Main;
 
-            battleIcons.transform.position = new Vector3(GameObject.Find("Agatha").transform.position.x, battleIcons.transform.position.y, battleIcons.transform.position.z);
+            battleIcons.transform.position = new Vector3(participants[0].character.transform.position.x, battleIcons.transform.position.y, battleIcons.transform.position.z);
             LowerIcons();
         }
     }
