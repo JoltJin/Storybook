@@ -1,6 +1,8 @@
 using Cinemachine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -8,7 +10,16 @@ using static UnityEditor.PlayerSettings;
 
 public class BattleController : MonoBehaviour
 {
-    private enum CurrentTurn
+    public enum CharacterStatus
+    {
+        Normal,
+        Asleep,
+        Poisoned,
+        Cursed,
+        Dead,
+        Frozen
+    }
+    public enum CurrentTurn
     {
         Main,
         Partner,
@@ -18,41 +29,104 @@ public class BattleController : MonoBehaviour
         Enemy4
     }
 
+    
+
     private CurrentTurn currentTurn;
 
     //class to hold all information for each character in the battle
     public class BattleParticipant
     {
         public string charName;
+        public CurrentTurn charRole;
         public int maxHealth, currentHealth, attack, defense;
         public Vector3 homePosition;
         public GameObject character;
+        public GameObject arrowLocation;
+        public CharacterStatus status;
+        public int weakenedTimer = 0;
+        public Animator participantAnim;
 
+        public int maxDamageRingSize;
+        public int damageBuildupAmount = 0;
 
-        public BattleParticipant(string name, int maxHp, int currentHp, int atk, int def)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name">Character name</param>
+        /// <param name="role">Slot character takes up</param>
+        /// <param name="maxHp">Max health</param>
+        /// <param name="currentHp">Current health</param>
+        /// <param name="atk">Base attack value</param>
+        /// <param name="def">Base defense value</param>
+
+        public BattleParticipant(string name,CurrentTurn role, int maxHp, int currentHp, int atk, int def)
         {
             charName = name;
+            charRole = role;
             maxHealth = maxHp;
             currentHealth = currentHp;
             attack = atk;
             defense = def;
+
+            maxDamageRingSize = maxHp / 2;
         }
 
         public void SetParticipantObject(GameObject character)
         {
             this.character = character;
+            participantAnim = character.transform.GetChild(0).GetComponent<Animator>();
+
+            if(character.transform.Find("Arrow Position"))
+            {
+                arrowLocation = character.transform.Find("Arrow Position").gameObject;
+            }
+            else
+            {
+                Debug.Log(character + " doesn't have an arrow position added originally");
+                GameObject arrowSpawn = new GameObject("Temporary arrow");
+                arrowSpawn.transform.SetParent(character.transform);
+                arrowSpawn.transform.position = Vector3.up;
+                arrowLocation = arrowSpawn;
+            }
+        }
+
+        public void TakeDamage(int damage)
+        {
+            currentHealth = currentHealth - damage;
+        }
+
+        public void TurnTracker()
+        {
+
+        }
+
+        public void ReduceWeakenedTimer()
+        {
+            weakenedTimer--;
+        }
+
+        public void SetWeakenedTimer()
+        {
+            Debug.Log(charName + " has been weakened for 2 turns");
+            weakenedTimer = 2;
         }
     }
 
-    [SerializeField] private TextMeshProUGUI mainHp;
-    [SerializeField] private TextMeshProUGUI partnerHp;
-
+    public static List<BattleParticipant> participants = new List<BattleParticipant>();
+    
+    [SerializeField] private TextMeshProUGUI[] mainHp = new TextMeshProUGUI[3];
+    [SerializeField] private TextMeshProUGUI[] partnerHp = new TextMeshProUGUI[3];
+    [SerializeField] private TextMeshProUGUI[] MpBar = new TextMeshProUGUI[3];
+    [SerializeField] private TextMeshProUGUI expText;
+    [SerializeField] private GameObject expPrefab;
     [SerializeField] private BattleIconRotation battleIcons;
+    [SerializeField] private GameObject partnerUI;
+    [SerializeField]private GameObject expGoalLocation;
+
 
     [SerializeField] private ActionCommandController actionCommand;
 
     //list accessable to add and reset before and after battles
-    public static List<BattleParticipant> participants = new List<BattleParticipant>();
 
     private bool attackFinished = false;
     private bool damageFinished = false;
@@ -67,31 +141,41 @@ public class BattleController : MonoBehaviour
 
     [SerializeField] private GameObject zoomCam;
     [SerializeField] private CinemachineTargetGroup targetGroup;
-    [SerializeField] private Transform expEndLocation;
-    [SerializeField] private GameObject expPrefab;
-    [SerializeField] private TextMeshProUGUI expText;
 
     [SerializeField] GameObject battleObjectHolder;
     [SerializeField] private Animator bookAnim;
 
+
     private bool canDefend = false;
     [SerializeField] private float walkingRate = 4;
+
     /// <summary>
     /// Damage Icon stuff
     /// </summary>
-    [SerializeField]int maxDamageRingSize = 12;
-    int damageBuildupAmount = 0;
     public GameObject damageBarIcon;
     public GameObject damageNumberIcon;
+
+
+    [SerializeField] GameObject[] characterPrefabs = new GameObject[3];
+
+    /// <summary>
+    /// For selecting between targets
+    /// </summary>
+    public GameObject selectArrow;
+    private CurrentTurn selection;
 
     // Start is called before the first frame update
     void Start()
     {
-        if(battleObjectHolder != null) { battleObjectHolder.SetActive(false); }
+        selectArrow.SetActive(false);
+        partnerUI.SetActive(false);
+
+        //if(battleObjectHolder != null) { battleObjectHolder.SetActive(false); }
 
         PlayerData.party.Add(new PartyStats("Agatha", 10, 1, 0));
-        PlayerData.party.Add(new PartyStats("Faylee", 10, 1, 0));
-        PlayerData.enchantments.Add(new Enchantment("Big Damage", "This does the big damages", 3, EnchantmentType.Attack, 3, EnchantmentTarget.Both));
+        //PlayerData.party.Add(new PartyStats("Faylee", 10, 1, 0));
+        //PlayerData.enchantments.Add(new Enchantment("Big Damage", "This does the big damages", 3, EnchantmentType.Attack, 3, EnchantmentTarget.Both));
+        expText.text = "x" + PlayerData.party[0].currentExp.ToString();
 
 
         int pattack = 0, pdef = 0, mattack = 0, mdef = 0;
@@ -141,56 +225,127 @@ public class BattleController : MonoBehaviour
         //default if nothing is currently set
         if(participants.Count < 1)
         {
-            AddParticipant(PlayerData.party[0], mattack, mdef);
-            AddParticipant(PlayerData.party[1], pattack, pdef);
+            AddParticipant(PlayerData.party[0], CurrentTurn.Main, mattack, mdef);
+            //AddParticipant(PlayerData.party[1], CurrentTurn.Partner, pattack, pdef);
             //AddParticipant("Agatha", 10, 10, 1, 0);
             //AddParticipant("Faylee", 10, 10, 1, 0);
-            AddParticipant("Jackalope", 5, 1, 0);
+            AddParticipant("Jackalope", CurrentTurn.Enemy1, 5, 1, 0);
+            AddParticipant("Jackalope", CurrentTurn.Enemy2, 5, 1, 0);
         }
 
         for (int i = 0; i < participants.Count; i++)
         {
-            participants[i].homePosition = points.GetLocation(i);
-            participants[i].SetParticipantObject(GameObject.Find(participants[i].charName));
+            participants[i].homePosition = points.GetLocation(participants[i].charRole);
+
+
+            for (int j = 0; j < characterPrefabs.Length; j++)
+            {
+                if (characterPrefabs[j].name == participants[i].charName)
+                {
+                    GameObject body = Instantiate(characterPrefabs[j], new Vector3(0, 0, 0), Quaternion.identity, battleObjectHolder.transform);
+                    body.name = characterPrefabs[j].name;
+                    participants[i].SetParticipantObject(body);
+                    body.SetActive(false);
+
+                    StartCoroutine(DelayEntryTimer(UnityEngine.Random.Range(0, .75f), body));
+
+
+                    break;
+                }
+
+                if (j == characterPrefabs.Length - 1) Debug.Log("Character not found");
+            }
+
+            if (participants[i].charRole > CurrentTurn.Partner)
+            {
+                if (participants[i].character.GetComponentInChildren<BattleEnemyCommunicator>())
+                {
+                    participants[i].character.GetComponentInChildren<BattleEnemyCommunicator>().enemySlot = participants[i].charRole;
+                }
+                else Debug.Log("Failed to find");
+            }
+
+
+            //participants[i].SetParticipantObject(GameObject.Find(participants[i].charName));
             participants[i].character.transform.position = participants[i].homePosition;
+            Debug.Log(participants[i].character.transform.position = participants[i].homePosition);
             //GameObject.Find(participants[i].charName).transform.position = participants[i].homePosition;
 
-            if(participants[i].charName == "Agatha")
+            if(participants[i].charRole == CurrentTurn.Main)
             {
-                mainHp.text = participants[i].currentHealth.ToString() + "/" + participants[i].maxHealth.ToString();
+                mainHp[0].text = participants[i].currentHealth.ToString();
+                mainHp[1].text = "/";
+                mainHp[2].text = participants[i].maxHealth.ToString();
             }
-            else if(participants[i].charName == "Faylee")
+            else if(participants[i].charRole == CurrentTurn.Partner)
             {
-                partnerHp.text = participants[i].currentHealth.ToString() + "/" + participants[i].maxHealth.ToString();
+                partnerUI.SetActive(true);
+                partnerHp[0].text = participants[i].currentHealth.ToString();
+                partnerHp[1].text = "/";
+                partnerHp[2].text = participants[i].maxHealth.ToString();
             }
         }
-        
+        if (!FindTarget(currentTurn).character.transform.Find("Idea Rotator Location"))
+        {
+            Debug.Log("Idea Rotator Location is missing on " + FindTarget(currentTurn).charName);
+            return;
+        }
+        Vector3 spawnLocation = FindTarget(currentTurn).character.transform.Find("Idea Rotator Location").position;
+        battleIcons.transform.position = spawnLocation;
+
+        //battleIcons.transform.position = new Vector3(FindTarget(currentTurn).character.transform.position.x, battleIcons.transform.position.y + FindTarget(currentTurn).character.transform.position.y, battleIcons.transform.position.z);
+    }
+
+    private IEnumerator DelayEntryTimer(float delayAmount, GameObject target)
+    {
+        yield return new WaitForSeconds(delayAmount);
+        target.SetActive(true);
+
+        if (target = FindTarget(currentTurn).character)
+        {
+
+            FindTarget(currentTurn).participantAnim.SetBool("Deciding", true);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetButtonDown("Action1"))
+        if (Input.GetButtonDown("Action1"))
         {
-            if(battleIcons.CanSelectOption)
+            if (battleIcons.CanSelectOption)
             {
-                if(battleIcons.GetSlot() == IconType.Main_Attack)
+                if (battleIcons.GetSlot() == IconType.Main_Attack && !selectArrow.activeInHierarchy)
                 {
-                    if (currentTurn == CurrentTurn.Main)
-                    {
-                        StartCoroutine(MoveParticipant(participants[0]));
-                    }
-                    else if (currentTurn == CurrentTurn.Partner)
-                    {
-                        StartCoroutine(MoveParticipant(participants[1]));
-                    }
-                    else
-                    {
-                        //StartCoroutine(MoveParticipant("Jackalope"));
-                    }
+                    selectArrow.SetActive(true);
+
+                    SetBaseSelection(true);
+
+                    canRotateIcons = false;
+
+                    //if (currentTurn == CurrentTurn.Main)
+                    //{
+                    //    StartCoroutine(MoveParticipant(participants[0]));
+                    //}
+                    //else if (currentTurn == CurrentTurn.Partner)
+                    //{
+                    //    StartCoroutine(MoveParticipant(participants[1]));
+                    //}
+                    //else
+                    //{
+                    //    //StartCoroutine(MoveParticipant("Jackalope"));
+                    //}
+                }
+                else if (battleIcons.GetSlot() == IconType.Main_Attack && selectArrow.activeInHierarchy)
+                {
+                    selectArrow.SetActive(false);
+
+                    FindTarget(currentTurn).participantAnim.SetBool("Deciding", false);
+
+                    StartCoroutine(MoveParticipant(FindTarget(currentTurn)));
                 }
             }
-            if(canDefend)
+            if (canDefend)
             {
                 Debug.Log("Set up defend animation junk");
                 spriteAnim.SetTrigger("Guarding");
@@ -202,7 +357,32 @@ public class BattleController : MonoBehaviour
             //    spriteAnim.SetTrigger("Attacking");
             //}
         }
-        else if(Input.GetButtonUp("Action1"))
+        else if (selectArrow.activeInHierarchy && Input.GetAxisRaw("Horizontal") != 0)
+        {
+            if ((Input.GetAxisRaw("Horizontal") < 0))
+            {
+                if (Input.GetButtonDown("Horizontal"))
+                {
+                    SelectEnemy(false);
+                }
+            }
+            else
+            {
+                if (Input.GetButtonDown("Horizontal"))
+                {
+                    SelectEnemy(true);
+                }
+            }
+        }
+        else if (Input.GetButtonDown("Action2"))
+        {
+            if (battleIcons.GetSlot() == IconType.Main_Attack && selectArrow.activeInHierarchy)
+            {
+                selectArrow.SetActive(false);
+                canRotateIcons = true;
+            }
+        }
+        else if (Input.GetButtonUp("Action1"))
         {
             //Debug.Log("End defending");
             reduceDamage = false;
@@ -220,7 +400,7 @@ public class BattleController : MonoBehaviour
                     battleIcons.RotateClockwise();
                 }
             }
-               
+
         }
     }
 
@@ -280,20 +460,37 @@ public class BattleController : MonoBehaviour
         
     }
     // creates the damage guage
-    private void CreateDamageBar(int damage, Vector3 location)
+    private void CreateDamageBar(int damage, Vector3 location, BattleParticipant target)
     {
-        StartCoroutine(DamageBarTimer(damage, location,1f));
+        StartCoroutine(DamageBarTimer(damage, location,1f, target));
     }
 
-    IEnumerator DamageBarTimer(int damage, Vector3 location, float time)
+    IEnumerator DamageBarTimer(int damage, Vector3 location, float time, BattleParticipant target)
     {
         //Vector3 center = GameObject.Find("Jackalope").transform.position;
-        damageBuildupAmount += damage;
+        target.damageBuildupAmount += damage;
 
         GameObject locationHolder = new GameObject("holder");
         locationHolder.transform.position = location;
-        int fullCircle = 30;
-        int angleInc = 360 / fullCircle;
+
+        int targetMaxCount = target.maxDamageRingSize;
+        int maxCircleSize = 0;
+
+        if(targetMaxCount <= 5)
+        {
+            maxCircleSize = 15;
+        }
+        else if(targetMaxCount <= 15)
+        {
+            maxCircleSize = 30;
+        }
+        else
+        {
+            maxCircleSize = 50;
+        }
+
+        //int fullCircle = 30;
+        int angleInc = 360 / maxCircleSize;
         //currentRingCount
 
         GameObject damageIcon = Instantiate(damageNumberIcon, Vector3.zero, Quaternion.identity, locationHolder.transform);
@@ -301,28 +498,28 @@ public class BattleController : MonoBehaviour
 
         List<Animator> icons = new List<Animator>();
 
-        for (int i = 0; i < maxDamageRingSize; i++)
+        for (int i = 0; i < target.maxDamageRingSize; i++)
         {
             int a = i * angleInc;
 
             Vector3 pos = RandomCircle(locationHolder.transform.position, 0.75f, a);
             GameObject smallIcon =  Instantiate(damageBarIcon, pos, Quaternion.identity, locationHolder.transform);
 
-            if(i < damageBuildupAmount)
+            if(i < target.damageBuildupAmount)
             {
                 icons.Add(smallIcon.GetComponent<Animator>());
             }
         }
 
-        if (damageBuildupAmount >= maxDamageRingSize)
+        if (target.damageBuildupAmount >= target.maxDamageRingSize)
         {
             foreach (Animator icon in icons)
             {
                 icon.SetBool("Colored", true);
                 icon.SetBool("Explode", true);
             }
-            damageBuildupAmount = 0;
-            TakeDamage(5);
+            target.damageBuildupAmount = 0;
+            target.SetWeakenedTimer();
         }
         else
         {
@@ -339,20 +536,21 @@ public class BattleController : MonoBehaviour
 
         Destroy(locationHolder);
     }
-    IEnumerator SpawnEXP(int numberOfExp)
+    IEnumerator SpawnEXP(int numberOfExp, CurrentTurn target)
     {
         int currentExp = 0;
         while (currentExp < numberOfExp)
         {
             currentExp++;
-            GameObject exp = Instantiate(expPrefab, participants[2].character.transform.GetChild(1).transform.position, Quaternion.identity);
+            GameObject exp = Instantiate(expPrefab, FindTarget(target).character.transform.GetChild(1).transform.position, Quaternion.identity);
 
-            float randX = Random.Range(0f, 4f);
-            float randY = Random.Range(0f, 4f);
-            StartCoroutine(EXPCurve(exp, 1f, exp.transform.position, new Vector3(randX, randY, exp.transform.position.z), new Vector3(3f, 4f, 1)));
-
+            float randX = UnityEngine.Random.Range(0f, 4f);
+            float randY = UnityEngine.Random.Range(0f, 4f);
+            StartCoroutine(EXPCurve(exp, 1f, exp.transform.position, new Vector3(randX, randY, exp.transform.position.z), expGoalLocation.transform.position));
+            //new Vector3(3f, 4f, 1)
             yield return new WaitForSeconds(0.1f);
         }
+        //RemoveEnemy(target);
     }
 
     IEnumerator EXPCurve(GameObject expIcon, float time, Vector3 pos0, Vector3 pos1, Vector3 pos2)
@@ -370,7 +568,7 @@ public class BattleController : MonoBehaviour
         }
 
         PlayerData.party[0].currentExp++;
-        
+
         expText.text = "x" + PlayerData.party[0].currentExp;
 
         Destroy(expIcon);
@@ -401,33 +599,33 @@ public class BattleController : MonoBehaviour
     //    //yield return new WaitForSeconds(0.01f);
     //}
 
-    /// <param name="target">Participant moving</param>
-    IEnumerator MoveParticipant(BattleParticipant target)
+    /// <param name="charToMove">Participant moving</param>
+    IEnumerator MoveParticipant(BattleParticipant charToMove)
     {
         attackFinished = false;
         damageFinished = false;
-        if (currentTurn != CurrentTurn.Enemy1)
+        if (currentTurn < CurrentTurn.Enemy1)
         {
             RaiseIcons();
         }
 
-        float destination;
+        Vector3 destination;
 
         Vector3 moveTo;
 
-        GameObject character = target.character;
+        BattleParticipant charTarget =  FindTarget(selection);
 
-        Animator anim = character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>();
-
-        if (currentTurn == CurrentTurn.Enemy1)
+        if (currentTurn >= CurrentTurn.Enemy1)
         {
-            destination = participants[0].character.transform.position.x + 1; //GameObject.Find("Agatha").transform.position.x + 1;
-            spriteAnim = participants[0].character.transform.GetChild(0).GetComponent<Animator>();
+            destination.x = charTarget.character.transform.position.x + 1; //GameObject.Find("Agatha").transform.position.x + 1;
+            destination.z = charTarget.character.transform.position.z;
+            spriteAnim = charTarget.participantAnim;
         }
         else
         {
-            destination = participants[2].character.transform.position.x - 1; //GameObject.Find("Jackalope").transform.position.x - 1;
-            SetCamFocus(character, participants[2].character);
+            destination.x = charTarget.character.transform.position.x - 1; //GameObject.Find("Jackalope").transform.position.x - 1;
+            destination.z = charTarget.character.transform.position.z;
+            SetCamFocus(charToMove.character, charTarget.character);
         }
         //if(name != "Agatha" && name != "Faylee")
         //{
@@ -441,9 +639,9 @@ public class BattleController : MonoBehaviour
         //}
 
 
-        if (currentTurn != CurrentTurn.Enemy1)
+        if (currentTurn < CurrentTurn.Enemy1)
         {
-            actionCommand.ActivateActionCommand(destination);
+            actionCommand.ActivateActionCommand(destination.x, destination.z);
 
             if(currentTurn == CurrentTurn.Main)
             {
@@ -457,16 +655,16 @@ public class BattleController : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);// delay before starting to walk to target
 
-        anim.SetBool("Walking", true);
+        charToMove.participantAnim.SetBool("Walking", true);
 
-        while (character.transform.position.x != destination)
+        while (charToMove.character.transform.position.x != destination.x || charToMove.character.transform.position.z != destination.z)
         {
-            moveTo = Vector3.MoveTowards(character.transform.position, new Vector3(destination, character.transform.position.y, character.transform.position.z), walkingRate * Time.fixedDeltaTime);
-            character.GetComponent<Rigidbody>().MovePosition(moveTo);
+            moveTo = Vector3.MoveTowards(charToMove.character.transform.position, new Vector3(destination.x, charToMove.character.transform.position.y, destination.z), walkingRate * Time.fixedDeltaTime);
+            charToMove.character.GetComponent<Rigidbody>().MovePosition(moveTo);
             yield return new WaitForSeconds(0.01f);
         }
-        anim.SetBool("Walking", false);
-        anim.SetTrigger("Attacking");
+        charToMove.participantAnim.SetBool("Walking", false);
+        charToMove.participantAnim.SetTrigger("Attacking");
 
         //if(currentTurn != CurrentTurn.Enemy1)
         //{
@@ -483,19 +681,19 @@ public class BattleController : MonoBehaviour
 
 
         ///////asdasd
-        if (currentTurn != CurrentTurn.Enemy1) { yield return new WaitUntil(() => damageFinished); }
+        if (currentTurn < CurrentTurn.Enemy1) { yield return new WaitUntil(() => damageFinished); }
         yield return new WaitForSeconds(.2f);// delay before starting to walk
 
-        anim.SetBool("Walking", true);
+        charToMove.participantAnim.SetBool("Walking", true);
 
         successBonusDamage = 0;
 
         //anim.SetBool("Attacking", false);
-        character.GetComponent<Animator>().SetTrigger("Flip");
-        character.GetComponent<Animator>().SetBool("TurningLeft", true);
+        charToMove.character.GetComponent<Animator>().SetTrigger("Flip");
+        charToMove.character.GetComponent<Animator>().SetBool("TurningLeft", true);
 
 
-        destination = target.homePosition.x;
+        destination = charToMove.homePosition;
         //for (int i = 0; i < participants.Count; i++)
         //{
         //    if (participants[i].charName == name)
@@ -505,108 +703,238 @@ public class BattleController : MonoBehaviour
         //    }
         //}
 
-        while (character.transform.position.x != destination)
+        while (charToMove.character.transform.position != destination)
         {
-            moveTo = Vector3.MoveTowards(character.transform.position, new Vector3(destination, character.transform.position.y, character.transform.position.z), walkingRate * Time.fixedDeltaTime);
-            character.GetComponent<Rigidbody>().MovePosition(moveTo);
+            moveTo = Vector3.MoveTowards(charToMove.character.transform.position, new Vector3(destination.x, charToMove.character.transform.position.y, destination.z), walkingRate * Time.fixedDeltaTime);
+            charToMove.character.GetComponent<Rigidbody>().MovePosition(moveTo);
             yield return new WaitForSeconds(0.01f);
         }
 
-        character.GetComponent<Animator>().SetTrigger("Flip");
-        character.GetComponent<Animator>().SetBool("TurningLeft", false);
-        anim.SetBool("Walking", false);
+        charToMove.character.GetComponent<Animator>().SetTrigger("Flip");
+        charToMove.character.GetComponent<Animator>().SetBool("TurningLeft", false);
+        charToMove.participantAnim.SetBool("Walking", false);
         
         ChangeTurn();
     }
 
-
+    private BattleParticipant FindTarget(CurrentTurn target)
+    {
+        for (int i = 0; i < participants.Count; i++)
+        {
+            if (participants[i].charRole == target)
+            {
+                return participants[i];
+            }
+        }
+        return null;
+    }
     public void TakeDamage(int damageAmount)
     {
-        participants[2].currentHealth -= damageAmount;
-        Debug.Log(participants[2].charName + " has taken " + damageAmount);
+        FindTarget(selection).TakeDamage(damageAmount);
+        Debug.Log(FindTarget(selection).charName + " has taken " + damageAmount);
 
-        if (participants[2].currentHealth <= 0)
+        if (FindTarget(selection).currentHealth <= 0 && !FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().GetBool("isDead"))
         {
-            StartCoroutine(SpawnEXP(5));
+            StartCoroutine(SpawnEXP(5, selection));
             Debug.Log("here 1");
-            participants[2].character.GetComponent<Animator>().SetTrigger("isDead");
-            participants[2].character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().SetBool("isDead", true);
+            FindTarget(selection).character.GetComponent<Animator>().SetTrigger("isDead");
+            FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().SetBool("isDead", true);
             //FindObjectOfType<BattleStartTrigger>().EndBattle();
         }
     }
     public void TakeDamage()
     {
-        if (currentTurn == CurrentTurn.Enemy1)
+        if (currentTurn >= CurrentTurn.Enemy1)
         {
             int damageReduction = 0;
 
             if (reduceDamage)
                 damageReduction = 1;
 
-            int damage = (successBonusDamage + participants[2].attack) - (participants[0].defense + damageReduction);
-            
-            participants[0].currentHealth -= damage;
-            mainHp.text = participants[0].currentHealth.ToString() + "/" + participants[0].maxHealth.ToString();
+            int damage = (successBonusDamage + FindTarget(currentTurn).attack) - (FindTarget(selection).defense + damageReduction);
+
+            FindTarget(CurrentTurn.Main).TakeDamage(damage);
+            mainHp[0].text = FindTarget(CurrentTurn.Main).currentHealth.ToString();
+            mainHp[1].text = "/";
+            mainHp[2].text = FindTarget(CurrentTurn.Main).maxHealth.ToString();
 
             spriteAnim.SetTrigger("Hit");
         }
         else
         {
-            int damage = (successBonusDamage + participants[0].attack) - participants[0].defense;
-            participants[2].currentHealth -= damage;
-            Debug.Log(participants[2].charName + " has taken " + damage);
+            int damage = (successBonusDamage + FindTarget(currentTurn).attack) - FindTarget(selection).defense;
+            FindTarget(selection).currentHealth -= damage;
+            Debug.Log(FindTarget(selection).charName + " has taken " + damage);
 
-            CreateDamageBar(damage, participants[2].homePosition);
+            CreateDamageBar(damage, FindTarget(selection).homePosition, FindTarget(selection));
 
-            if (participants[2].currentHealth <= 0)
+            if (FindTarget(selection).currentHealth <= 0 && !FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().GetBool("isDead"))
             {
-                StartCoroutine(SpawnEXP(5));
+                StartCoroutine(SpawnEXP(5, selection));
                 Debug.Log("here 2");
-                participants[2].character.GetComponent<Animator>().SetTrigger("isDead");
-                participants[2].character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().SetBool("isDead", true);
+                FindTarget(selection).character.GetComponent<Animator>().SetTrigger("isDead");
+                FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().SetBool("isDead", true);
                 //FindObjectOfType<BattleStartTrigger>().EndBattle();
             }
         }
     }
-    
+    public void RemoveEnemy(CurrentTurn deadEnemy)
+    {
+        for (int i = 0; i < participants.Count; i++)
+        {
+            if (participants[i].charRole == deadEnemy)
+            {
+                Destroy(participants[i].character);
+                participants.RemoveAt(i);
+                return;
+            }
+        }
+    }
+
     /// <param name="bonus">If extra damage is applied or not</param>
     public void TriggerBattleAction(bool bonus)
     {
-        if (bonus && currentTurn != CurrentTurn.Enemy1)
+        if (bonus && currentTurn < CurrentTurn.Enemy1)
             successBonusDamage = 1;
         else
             successBonusDamage = 0;
 
         if(currentTurn == CurrentTurn.Main)
         {
-            participants[0].character.transform.GetChild(0).GetComponent<Animator>().SetTrigger("AttackCharged");
+            FindTarget(currentTurn).character.transform.GetChild(0).GetComponent<Animator>().SetTrigger("AttackCharged");
             //GameObject.Find("Agatha").transform
         }
 
         AttackFinisher();
     }
 
-    public void ChangeTurn()
+    private void SetBaseSelection(bool enemy)
     {
-        if(currentTurn == CurrentTurn.Main)
+        if (enemy)
         {
-            currentTurn = CurrentTurn.Partner;
+            selection = CurrentTurn.Partner;
 
-            battleIcons.transform.position = new Vector3(participants[1].character.transform.position.x, battleIcons.transform.position.y, battleIcons.transform.position.z);
-            LowerIcons();
-        }
-        else if (currentTurn == CurrentTurn.Partner)
-        {
-            currentTurn = CurrentTurn.Enemy1;
-            StartCoroutine(MoveParticipant(participants[2]));
+            do
+                selection++;
+            while (FindTarget(selection) == null && (int)selection < Enum.GetNames(typeof(CurrentTurn)).Length);
         }
         else
         {
-            currentTurn = CurrentTurn.Main;
+            selection = currentTurn;
+        }
 
-            battleIcons.transform.position = new Vector3(participants[0].character.transform.position.x, battleIcons.transform.position.y, battleIcons.transform.position.z);
+        if (FindTarget(selection) == null || FindTarget(selection).status == CharacterStatus.Dead)
+        {
+            SetBaseSelection(enemy);
+            return;
+        }
+
+        PlaceArrow();
+    }
+    private void SelectEnemy(bool goRight)
+    {
+        if (goRight)
+            selection++;
+        else
+            selection--;
+
+        if(selection < CurrentTurn.Enemy1)
+        {
+            selection = (CurrentTurn)Enum.GetNames(typeof(CurrentTurn)).Length;
+        }
+        else if((int)selection > Enum.GetNames(typeof(CurrentTurn)).Length)
+        {
+            selection = CurrentTurn.Enemy1;
+        }
+
+        if (FindTarget(selection) == null || FindTarget(selection).status == CharacterStatus.Dead)
+        {
+            SelectEnemy(goRight);
+            return;
+        }
+
+        PlaceArrow();
+    }
+
+    private void PlaceArrow()
+    {
+        selectArrow.transform.position = FindTarget(selection).arrowLocation.transform.position;
+    }
+
+    private void SelectTeammate()
+    {
+
+    }
+    public void ChangeTurn()
+    {
+        currentTurn++;
+        
+        if(currentTurn > CurrentTurn.Enemy4)
+        {
+            currentTurn = CurrentTurn.Main;
+        }
+
+        if (FindTarget(currentTurn) == null || FindTarget(currentTurn).status == CharacterStatus.Dead)
+        {
+            if (FindTarget(currentTurn) == null)
+            {
+            }
+            else
+            {
+                FindTarget(currentTurn).participantAnim.SetBool("Deciding", false);
+            }
+
+            ChangeTurn();
+            return;
+        }
+
+        if(currentTurn > CurrentTurn.Partner)
+        {
+            if(FindTarget(currentTurn).weakenedTimer > 0)
+            {
+                FindTarget(currentTurn).ReduceWeakenedTimer();
+                ChangeTurn();
+                return;
+            }
+
+            // enemy moving
+            selection = CurrentTurn.Main;
+            StartCoroutine(MoveParticipant(FindTarget(currentTurn)));
+        }
+        else// if its player turn and they can move
+        {
+            if(!FindTarget(currentTurn).character.transform.Find("Idea Rotator Location"))
+            {
+                Debug.Log("Idea Rotator Location is missing on " + FindTarget(currentTurn).charName);
+                return;
+            }
+            Vector3 spawnLocation = FindTarget(currentTurn).character.transform.Find("Idea Rotator Location").position;
+            battleIcons.transform.position = spawnLocation;
+
+            FindTarget(currentTurn).participantAnim.SetBool("Deciding", true);
+
+            //battleIcons.transform.position = new Vector3(FindTarget(currentTurn).character.transform.Find("Idea Rotator Location").position.x, battleIcons.transform.position.y + .5f + FindTarget(currentTurn).character.transform.position.y, battleIcons.transform.position.z);
             LowerIcons();
         }
+
+        //if (currentTurn == CurrentTurn.Main)
+        //{
+        //    currentTurn = CurrentTurn.Partner;
+            
+
+            
+        //}
+        //else if (currentTurn == CurrentTurn.Partner)
+        //{
+        //    currentTurn = CurrentTurn.Enemy1;
+        //}
+        //else
+        //{
+        //    currentTurn = CurrentTurn.Main;
+
+        //    battleIcons.transform.position = new Vector3(FindTarget(currentTurn).character.transform.position.x, battleIcons.transform.position.y, battleIcons.transform.position.z);
+        //    LowerIcons();
+        //}
     }
 
     /// <summary>
@@ -693,19 +1021,19 @@ public class BattleController : MonoBehaviour
     }
 
     //for characters with hp not at max
-    public static void AddParticipant(string name, int maxHp, int currentHp, int atk, int def)
+    public static void AddParticipant(string name, CurrentTurn role, int maxHp, int currentHp, int atk, int def)
     {
-        participants.Add(new BattleParticipant(name, maxHp, currentHp, atk, def));
+        participants.Add(new BattleParticipant(name,role, maxHp, currentHp, atk, def));
     }
     //for characters who start at max, most enemies
-    public static void AddParticipant(string name, int maxHp, int atk, int def)
+    public static void AddParticipant(string name, CurrentTurn role, int maxHp, int atk, int def)
     {
-        participants.Add(new BattleParticipant(name, maxHp, maxHp, atk, def));
+        participants.Add(new BattleParticipant(name, role, maxHp, maxHp, atk, def));
     }
     //for player characters
-    public static void AddParticipant(PartyStats partyMember, int enchantmentAttack, int enchantmentDefense)
+    public static void AddParticipant(PartyStats partyMember, CurrentTurn role, int enchantmentAttack, int enchantmentDefense)
     {
-        participants.Add(new BattleParticipant(partyMember.charName, partyMember.maxHealth, partyMember.currentHealth, partyMember.baseDamage + enchantmentAttack, partyMember.defense + enchantmentDefense));
+        participants.Add(new BattleParticipant(partyMember.charName, role, partyMember.maxHealth, partyMember.currentHealth, partyMember.baseDamage + enchantmentAttack, partyMember.defense + enchantmentDefense));
         //participants.Add(new BattleParticipant(name, maxHp, maxHp, atk, def));
     }
     

@@ -7,13 +7,13 @@ public class PlayerInteract : MonoBehaviour
 {
     [SerializeField] private GameObject indicator;
 
+    private float interactRange = .25f;
     // Update is called once per frame
     void Update()
     {
         FindInteractableObject();
-        if (Input.GetKeyDown(KeyCode.X))
+        if (Input.GetKeyDown(KeyCode.X) && !PlayerController.isBusy)
         {
-            float interactRange = 1.5f;
             Collider[] colliderArray = Physics.OverlapSphere(transform.position, interactRange);
 
             foreach(Collider collider in colliderArray) 
@@ -40,7 +40,6 @@ public class PlayerInteract : MonoBehaviour
     public void FindInteractableObject()
     {
         List<IInterface> interactList = new List<IInterface>();
-        float interactRange = 1.5f;
         Collider[] colliderArray = Physics.OverlapSphere(transform.position, interactRange);
 
         foreach (Collider collider in colliderArray)

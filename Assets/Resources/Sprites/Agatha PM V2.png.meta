@@ -71,6 +71,18 @@ TextureImporter:
   - first:
       213: 5527543414122192011
     second: Agatha Talking 1
+  - first:
+      213: 225471285816453709
+    second: Agatha Deciding 1
+  - first:
+      213: 1076189802249669352
+    second: Agatha Deciding 2
+  - first:
+      213: -3568380031350214389
+    second: Agatha Deciding 3
+  - first:
+      213: 9128827893819333843
+    second: Agatha Deciding 4
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -184,8 +196,8 @@ TextureImporter:
       name: Agatha Walking 1
       rect:
         serializedVersion: 2
-        x: 64
-        y: 0
+        x: 0
+        y: 320
         width: 64
         height: 64
       alignment: 7
@@ -205,8 +217,8 @@ TextureImporter:
       name: Agatha Walking 2
       rect:
         serializedVersion: 2
-        x: 128
-        y: 0
+        x: 64
+        y: 320
         width: 64
         height: 64
       alignment: 7
@@ -226,8 +238,8 @@ TextureImporter:
       name: Agatha Walking 3
       rect:
         serializedVersion: 2
-        x: 192
-        y: 0
+        x: 128
+        y: 320
         width: 64
         height: 64
       alignment: 7
@@ -247,8 +259,8 @@ TextureImporter:
       name: Agatha Standing Backward
       rect:
         serializedVersion: 2
-        x: 256
-        y: 0
+        x: 0
+        y: 384
         width: 64
         height: 64
       alignment: 7
@@ -268,8 +280,8 @@ TextureImporter:
       name: Agatha Walking Backward 1
       rect:
         serializedVersion: 2
-        x: 320
-        y: 0
+        x: 0
+        y: 256
         width: 64
         height: 64
       alignment: 7
@@ -289,8 +301,8 @@ TextureImporter:
       name: Agatha Walking Backward 2
       rect:
         serializedVersion: 2
-        x: 384
-        y: 0
+        x: 64
+        y: 256
         width: 64
         height: 64
       alignment: 7
@@ -310,8 +322,8 @@ TextureImporter:
       name: Agatha Walking Backward 3
       rect:
         serializedVersion: 2
-        x: 448
-        y: 0
+        x: 128
+        y: 256
         width: 64
         height: 64
       alignment: 7
@@ -331,8 +343,8 @@ TextureImporter:
       name: Agatha Idle Forward 1
       rect:
         serializedVersion: 2
-        x: 512
-        y: 0
+        x: 0
+        y: 448
         width: 64
         height: 64
       alignment: 7
@@ -352,8 +364,8 @@ TextureImporter:
       name: Agatha Idle Forward 2
       rect:
         serializedVersion: 2
-        x: 576
-        y: 0
+        x: 64
+        y: 448
         width: 64
         height: 64
       alignment: 7
@@ -373,8 +385,8 @@ TextureImporter:
       name: Agatha Idle Forward 3
       rect:
         serializedVersion: 2
-        x: 640
-        y: 0
+        x: 128
+        y: 448
         width: 64
         height: 64
       alignment: 7
@@ -394,8 +406,8 @@ TextureImporter:
       name: Agatha Idle Forward 4
       rect:
         serializedVersion: 2
-        x: 704
-        y: 0
+        x: 192
+        y: 448
         width: 64
         height: 64
       alignment: 7
@@ -415,8 +427,8 @@ TextureImporter:
       name: Agatha Spell Charge 1
       rect:
         serializedVersion: 2
-        x: 768
-        y: 0
+        x: 0
+        y: 192
         width: 64
         height: 64
       alignment: 7
@@ -436,8 +448,8 @@ TextureImporter:
       name: Agatha Spell Charge 2
       rect:
         serializedVersion: 2
-        x: 832
-        y: 0
+        x: 64
+        y: 192
         width: 64
         height: 64
       alignment: 7
@@ -457,8 +469,8 @@ TextureImporter:
       name: Agatha Spell Cast 1
       rect:
         serializedVersion: 2
-        x: 896
-        y: 0
+        x: 128
+        y: 192
         width: 64
         height: 64
       alignment: 7
@@ -478,8 +490,8 @@ TextureImporter:
       name: Agatha Spell Cast 2
       rect:
         serializedVersion: 2
-        x: 960
-        y: 0
+        x: 192
+        y: 192
         width: 64
         height: 64
       alignment: 7
@@ -499,8 +511,8 @@ TextureImporter:
       name: Agatha Spell Cast 3
       rect:
         serializedVersion: 2
-        x: 1024
-        y: 0
+        x: 256
+        y: 192
         width: 64
         height: 64
       alignment: 7
@@ -520,8 +532,8 @@ TextureImporter:
       name: Agatha Guard 1
       rect:
         serializedVersion: 2
-        x: 1088
-        y: 0
+        x: 0
+        y: 128
         width: 64
         height: 64
       alignment: 7
@@ -541,8 +553,8 @@ TextureImporter:
       name: Agatha Guard 2
       rect:
         serializedVersion: 2
-        x: 1152
-        y: 0
+        x: 64
+        y: 128
         width: 64
         height: 64
       alignment: 7
@@ -562,8 +574,8 @@ TextureImporter:
       name: Agatha Idle Backward 1
       rect:
         serializedVersion: 2
-        x: 1216
-        y: 0
+        x: 64
+        y: 384
         width: 64
         height: 64
       alignment: 7
@@ -583,8 +595,8 @@ TextureImporter:
       name: Agatha Idle Backward 2
       rect:
         serializedVersion: 2
-        x: 1280
-        y: 0
+        x: 128
+        y: 384
         width: 64
         height: 64
       alignment: 7
@@ -604,8 +616,8 @@ TextureImporter:
       name: Agatha Idle Backward 3
       rect:
         serializedVersion: 2
-        x: 1344
-        y: 0
+        x: 192
+        y: 384
         width: 64
         height: 64
       alignment: 7
@@ -625,8 +637,8 @@ TextureImporter:
       name: Agatha Talking 1
       rect:
         serializedVersion: 2
-        x: 1408
-        y: 0
+        x: 320
+        y: 448
         width: 64
         height: 64
       alignment: 7
@@ -638,6 +650,90 @@ TextureImporter:
       bones: []
       spriteID: b8c9d4fe277c5bc40800000000000000
       internalID: 5527543414122192011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Agatha Deciding 1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d4ae32a90f8012300800000000000000
+      internalID: 225471285816453709
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Agatha Deciding 2
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 64
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8ea4df95ce46fee00800000000000000
+      internalID: 1076189802249669352
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Agatha Deciding 3
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 64
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b01f5cf74419a7ec0800000000000000
+      internalID: -3568380031350214389
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Agatha Deciding 4
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 64
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3dc57c25a9c10be70800000000000000
+      internalID: 9128827893819333843
       vertices: []
       indices: 
       edges: []

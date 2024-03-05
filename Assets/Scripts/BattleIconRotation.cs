@@ -26,6 +26,8 @@ public class BattleIconRotation : MonoBehaviour
             positions[i] = icons[i].transform.localPosition;
             originalPositions[i] = icons[i].transform.localPosition;
         }
+
+        ResetColors();
     }
 
     public IconType GetSlot()
@@ -48,12 +50,36 @@ public class BattleIconRotation : MonoBehaviour
 
     }
 
+    private void ResetColors()
+    {
+        for (int i = 0; i < positions.Length; i++)
+        {
+            if (icons[i].transform.localPosition == mainSlotPos)
+            {
+                foreach (SpriteRenderer spriteColor in icons[i].GetComponentsInChildren<SpriteRenderer>())
+                {
+                    spriteColor.color = Color.white;
+                }
+            }
+            else
+            {
+                foreach (SpriteRenderer spriteColor in icons[i].GetComponentsInChildren<SpriteRenderer>())
+                {
+                    spriteColor.color = Color.grey;
+                    //spriteColor.color = new Color(.35f, .35f, .35f);
+                }
+            }
+        }
+    }
+
     public void ResetPositions()
     {
         for (int i = 0; i < originalPositions.Length; i++)
         {
             icons[i].transform.localPosition = originalPositions[i];
         }
+
+        ResetColors();
     }
 
     public void SetAnimTrigger(string triggerName)
@@ -67,7 +93,7 @@ public class BattleIconRotation : MonoBehaviour
             return;
 
         int infront = 0;
-        float checker = 5;
+        float checker = 5;// number above length to always be set first
 
         for (int i = 0; i < positions.Length; i++)
         {
@@ -171,6 +197,25 @@ public class BattleIconRotation : MonoBehaviour
     IEnumerator MoveIcons(int sortingIcon)
     {
         CanSelectOption = false;
+
+        for (int i = 0; i < positions.Length; i++)
+        {
+            if (positions[i] == mainSlotPos)
+            {
+                foreach (SpriteRenderer spriteColor in icons[i].GetComponentsInChildren<SpriteRenderer>())
+                {
+                    spriteColor.color = Color.white;
+                }
+            }
+            else
+            {
+                foreach (SpriteRenderer spriteColor in icons[i].GetComponentsInChildren<SpriteRenderer>())
+                {
+                    spriteColor.color = Color.grey;
+                }
+            }
+        }
+        
         yield return new WaitForSeconds(0.01f);
         float time = 0;
         float duration = 1;

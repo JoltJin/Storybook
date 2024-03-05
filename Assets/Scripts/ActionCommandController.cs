@@ -66,9 +66,9 @@ public class ActionCommandController : MonoBehaviour
         DeactivateActionCommand();
     }
 
-    public void ActivateActionCommand(float xPos)
+    public void ActivateActionCommand(float xPos, float zPos)
     {
-        transform.position = new Vector3(xPos, transform.position.y, transform.position.z);
+        transform.position = new Vector3(xPos, transform.position.y, zPos);
     }
 
     public void DeactivateActionCommand()

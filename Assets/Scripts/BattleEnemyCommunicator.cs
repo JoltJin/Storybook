@@ -5,6 +5,7 @@ using UnityEngine;
 public class BattleEnemyCommunicator : MonoBehaviour
 {
     private BattleController battleControl;
+    public BattleController.CurrentTurn enemySlot;
     // Start is called before the first frame update
     void Start()
     {
@@ -39,5 +40,11 @@ public class BattleEnemyCommunicator : MonoBehaviour
     public void EndSuperGuard()
     {
 
+    }
+
+    public void Dead()
+    {
+        battleControl.RemoveEnemy(enemySlot);
+        //Destroy(gameObject.transform.parent);
     }
 }

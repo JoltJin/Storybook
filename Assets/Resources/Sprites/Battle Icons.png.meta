@@ -23,6 +23,12 @@ TextureImporter:
   - first:
       213: 8413178563113661234
     second: Battle Icons Default Weapon
+  - first:
+      213: 240810844849202499
+    second: Battle Icons Bag
+  - first:
+      213: -7126328196741798777
+    second: Battle Icons Tactical
   externalObjects: {}
   serializedVersion: 11
   mipmaps:
@@ -246,7 +252,7 @@ TextureImporter:
         width: 64
         height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -254,6 +260,48 @@ TextureImporter:
       bones: []
       spriteID: 2333256045d91c470800000000000000
       internalID: 8413178563113661234
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Battle Icons Bag
+      rect:
+        serializedVersion: 2
+        x: 394
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3456c410038875300800000000000000
+      internalID: 240810844849202499
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Battle Icons Tactical
+      rect:
+        serializedVersion: 2
+        x: 458
+        y: 0
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 784ea5013423a1d90800000000000000
+      internalID: -7126328196741798777
       vertices: []
       indices: 
       edges: []

@@ -46,6 +46,7 @@ public class BattlePlayerCommunicator : MonoBehaviour
 
     public void DamageEnemy()
     {
+        Debug.Log(battleControl);
         battleControl.TakeDamage();
     }
 }

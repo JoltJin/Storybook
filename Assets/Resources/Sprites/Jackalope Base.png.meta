@@ -280,8 +280,8 @@ TextureImporter:
       name: Jackalope Attack 1 - 1
       rect:
         serializedVersion: 2
-        x: 448
-        y: 0
+        x: 0
+        y: 64
         width: 64
         height: 64
       alignment: 7
@@ -301,8 +301,8 @@ TextureImporter:
       name: Jackalope Attack 1 - 2
       rect:
         serializedVersion: 2
-        x: 512
-        y: 0
+        x: 64
+        y: 64
         width: 64
         height: 64
       alignment: 7
@@ -322,8 +322,8 @@ TextureImporter:
       name: Jackalope Attack 1 - 3
       rect:
         serializedVersion: 2
-        x: 576
-        y: 0
+        x: 128
+        y: 64
         width: 64
         height: 64
       alignment: 7
@@ -343,8 +343,8 @@ TextureImporter:
       name: Jackalope Attack 1 - 4
       rect:
         serializedVersion: 2
-        x: 640
-        y: 0
+        x: 192
+        y: 64
         width: 64
         height: 64
       alignment: 7
@@ -364,8 +364,8 @@ TextureImporter:
       name: Jackalope Attack 1 - 5
       rect:
         serializedVersion: 2
-        x: 704
-        y: 0
+        x: 256
+        y: 64
         width: 64
         height: 64
       alignment: 7
@@ -385,8 +385,8 @@ TextureImporter:
       name: Jackalope Attack 1 - 6
       rect:
         serializedVersion: 2
-        x: 768
-        y: 0
+        x: 320
+        y: 64
         width: 64
         height: 64
       alignment: 7

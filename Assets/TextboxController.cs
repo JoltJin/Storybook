@@ -19,6 +19,7 @@ public class TextboxController : MonoBehaviour
         agathaEnder = " <sprite name=\"Agatha\"",
         fayleeEnder = " <sprite name=\"Faylee\"",
         willowEnder = " <sprite name=\"Willow\"",
+        genericEnder = " <sprite name=\"Faylee\"",
         invisibleEnder = " color=#FFFFFF00><color=#00000000>.",
         visibleEnder = "><color=#00000000>.";
 
@@ -87,7 +88,7 @@ public class TextboxController : MonoBehaviour
     {
         if (isOpen)
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.X))
             {
                 if (textWriterSingle != null && textWriterSingle.IsActive())
                 {
@@ -224,6 +225,10 @@ public class TextboxController : MonoBehaviour
 
     public void SetPosition(Transform pos, float height, CharacterAnimator characterAnimator)
     {
+
+        PlayerController.isBusy = true;
+
+        transform.SetParent(pos.transform);
         this.characterAnimator = characterAnimator;
 
         if(isOpen)
@@ -263,12 +268,15 @@ public class TextboxController : MonoBehaviour
                 finisher += willowEnder;
                 break;
                 case textEnder.Generic:
+                finisher += genericEnder;
                 //finisher = "";
                 break;
         }
 
         //Hi there <sprite name="Agatha" color=#FFFFFF00> set it to transparent
         endingMark =  finisher;
+
+        textWriterSingle = TextWriter.AddWriter_Static(text, message, 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound);
     }
     
     private void CloseTextbox()
@@ -276,5 +284,12 @@ public class TextboxController : MonoBehaviour
         anim.SetTrigger("Close");
         StopAllCoroutines();
         isOpen = false;
+        StartCoroutine(TextboxDelay());
+    }
+
+    IEnumerator TextboxDelay()
+    {
+        yield return new WaitForEndOfFrame();
+        PlayerController.isBusy = false;
     }
 }

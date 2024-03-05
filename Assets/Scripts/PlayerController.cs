@@ -26,6 +26,19 @@ public class PlayerController : MonoBehaviour, CharacterAnimator
     [SerializeField] private GameObject hudBar;
     private bool fader;
 
+    [SerializeField] private List<AudioClip> walkingSounds = new List<AudioClip>();
+    [SerializeField] AudioSource soundEffects;
+
+    public static bool isBusy = false;
+
+    public void PlaySounds()
+    {
+        
+        soundEffects.clip = walkingSounds[Random.Range(0, walkingSounds.Count)];
+        soundEffects.pitch = 1f + Random.Range(-.25f, .25f);
+        soundEffects.Play();
+    }
+
         //setting up needed variables
     private void Start()
     {
@@ -71,6 +84,10 @@ public class PlayerController : MonoBehaviour, CharacterAnimator
 
     void Update()
     {
+        if(isBusy)
+        {
+            return;
+        }
         groundedPlayer = controller.isGrounded;
         if (groundedPlayer && playerVelocity.y < 0)
         {
