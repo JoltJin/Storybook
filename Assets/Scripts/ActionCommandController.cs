@@ -61,8 +61,8 @@ public class ActionCommandController : MonoBehaviour
     void Start()
     {
         actionIcon.SetTrigger("Left Press");
-        ResetObjects();
         child = transform.GetChild(0).gameObject;
+        ResetObjects();
         DeactivateActionCommand();
     }
 
@@ -73,10 +73,12 @@ public class ActionCommandController : MonoBehaviour
 
     public void DeactivateActionCommand()
     {
+
+
         GetComponent<Animator>().SetBool("DisplayAction", false);
-        isActive = false;
-        chargeBody.SetActive(false);
-        child.SetActive(false);
+        //isActive = false;
+        //chargeBody.SetActive(false);
+        //child.SetActive(false);
     }
 
     public void TurnOffObject()
@@ -222,5 +224,9 @@ public class ActionCommandController : MonoBehaviour
         flashing = false;
         properlyCharged= false;
         //actionIcon.gameObject.SetActive(false);
+
+        isActive = false;
+        chargeBody.SetActive(false);
+        child.SetActive(false);
     }
 }

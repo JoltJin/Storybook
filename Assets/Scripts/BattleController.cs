@@ -29,6 +29,12 @@ public class BattleController : MonoBehaviour
         Enemy4
     }
 
+    public enum SpecialBattleLocations
+    {
+        PlayerCast,
+        EnemyCast,
+        PlayerFlee
+    }
     
 
     private CurrentTurn currentTurn;
@@ -74,7 +80,7 @@ public class BattleController : MonoBehaviour
         public void SetParticipantObject(GameObject character)
         {
             this.character = character;
-            participantAnim = character.transform.GetChild(0).GetComponent<Animator>();
+            participantAnim = character.transform.GetChild(0).GetComponentInChildren<Animator>();
 
             if(character.transform.Find("Arrow Position"))
             {
@@ -268,7 +274,7 @@ public class BattleController : MonoBehaviour
 
             //participants[i].SetParticipantObject(GameObject.Find(participants[i].charName));
             participants[i].character.transform.position = participants[i].homePosition;
-            Debug.Log(participants[i].character.transform.position = participants[i].homePosition);
+            //Debug.Log(participants[i].character.transform.position = participants[i].homePosition);
             //GameObject.Find(participants[i].charName).transform.position = participants[i].homePosition;
 
             if(participants[i].charRole == CurrentTurn.Main)
@@ -315,37 +321,48 @@ public class BattleController : MonoBehaviour
         {
             if (battleIcons.CanSelectOption)
             {
-                if (battleIcons.GetSlot() == IconType.Main_Attack && !selectArrow.activeInHierarchy)
+                if(battleIcons.GetSlot() == IconType.Main_Attack)// if main attack
                 {
-                    selectArrow.SetActive(true);
+                    if (!selectArrow.activeInHierarchy)// if nothing has been selected yet put out an arrow to allow selection
+                    {
+                        selectArrow.SetActive(true);
 
-                    SetBaseSelection(true);
+                        SetBaseSelection(true);
 
-                    canRotateIcons = false;
+                        canRotateIcons = false;
+                    }
+                    else if (selectArrow.activeInHierarchy)// if something has been selected already then identify who was selected and turn off the arrow
+                    {
+                        selectArrow.SetActive(false);
 
-                    //if (currentTurn == CurrentTurn.Main)
-                    //{
-                    //    StartCoroutine(MoveParticipant(participants[0]));
-                    //}
-                    //else if (currentTurn == CurrentTurn.Partner)
-                    //{
-                    //    StartCoroutine(MoveParticipant(participants[1]));
-                    //}
-                    //else
-                    //{
-                    //    //StartCoroutine(MoveParticipant("Jackalope"));
-                    //}
+                        FindTarget(currentTurn).participantAnim.SetBool("Deciding", false);
+
+                        StartCoroutine(MoveParticipant(FindTarget(currentTurn)));// start the movement of the action for the attack
+                    }
                 }
-                else if (battleIcons.GetSlot() == IconType.Main_Attack && selectArrow.activeInHierarchy)
+                else if(battleIcons.GetSlot() == IconType.Tactics)// if the tactics option is selected
                 {
-                    selectArrow.SetActive(false);
+                    if (!selectArrow.activeInHierarchy)// if nothing has been selected yet put out an arrow to allow selection
+                    {
+                        selectArrow.SetActive(true);
 
-                    FindTarget(currentTurn).participantAnim.SetBool("Deciding", false);
+                        SetBaseSelection(true);
 
-                    StartCoroutine(MoveParticipant(FindTarget(currentTurn)));
+                        canRotateIcons = false;
+                    }
+                    else if (selectArrow.activeInHierarchy)// if something has been selected already then identify who was selected and turn off the arrow
+                    {
+                        selectArrow.SetActive(false);
+
+                        FindTarget(currentTurn).participantAnim.SetBool("Deciding", false);
+
+                        StartCoroutine(MoveParticipant(FindTarget(currentTurn), FindObjectOfType<BattleLocationPoints>().GetSpecialLocation(SpecialBattleLocations.PlayerCast)));
+                        // start a different movement using a special location as the target to move towards
+                    }
                 }
+                
             }
-            if (canDefend)
+            else if (canDefend)
             {
                 Debug.Log("Set up defend animation junk");
                 spriteAnim.SetTrigger("Guarding");
@@ -376,7 +393,7 @@ public class BattleController : MonoBehaviour
         }
         else if (Input.GetButtonDown("Action2"))
         {
-            if (battleIcons.GetSlot() == IconType.Main_Attack && selectArrow.activeInHierarchy)
+            if (/*battleIcons.GetSlot() == IconType.Main_Attack &&*/ selectArrow.activeInHierarchy)
             {
                 selectArrow.SetActive(false);
                 canRotateIcons = true;
@@ -462,75 +479,89 @@ public class BattleController : MonoBehaviour
     // creates the damage guage
     private void CreateDamageBar(int damage, Vector3 location, BattleParticipant target)
     {
-        StartCoroutine(DamageBarTimer(damage, location,1f, target));
+        StartCoroutine(DamageBarTimer(damage, location, 1f, target));
     }
 
     IEnumerator DamageBarTimer(int damage, Vector3 location, float time, BattleParticipant target)
     {
+        float fullyShowBarTime = time; // how long the bar will be displayed after all pieces get colored
         //Vector3 center = GameObject.Find("Jackalope").transform.position;
-        target.damageBuildupAmount += damage;
-
         GameObject locationHolder = new GameObject("holder");
         locationHolder.transform.position = location;
-
-        int targetMaxCount = target.maxDamageRingSize;
-        int maxCircleSize = 0;
-
-        if(targetMaxCount <= 5)
-        {
-            maxCircleSize = 15;
-        }
-        else if(targetMaxCount <= 15)
-        {
-            maxCircleSize = 30;
-        }
-        else
-        {
-            maxCircleSize = 50;
-        }
-
-        //int fullCircle = 30;
-        int angleInc = 360 / maxCircleSize;
-        //currentRingCount
-
         GameObject damageIcon = Instantiate(damageNumberIcon, Vector3.zero, Quaternion.identity, locationHolder.transform);
         damageIcon.GetComponentInChildren<TextMeshPro>().text = damage.ToString();
 
-        List<Animator> icons = new List<Animator>();
-
-        for (int i = 0; i < target.maxDamageRingSize; i++)
+        if (target.weakenedTimer <=0)
         {
-            int a = i * angleInc;
+            target.damageBuildupAmount += damage;
 
-            Vector3 pos = RandomCircle(locationHolder.transform.position, 0.75f, a);
-            GameObject smallIcon =  Instantiate(damageBarIcon, pos, Quaternion.identity, locationHolder.transform);
+            int targetMaxCount = target.maxDamageRingSize;
 
-            if(i < target.damageBuildupAmount)
+            time /= targetMaxCount; // makes the counter take the same time to fully complete regardless of size
+
+            int maxCircleSize = 0;
+
+            if (targetMaxCount <= 5)
             {
-                icons.Add(smallIcon.GetComponent<Animator>());
+                maxCircleSize = 15;
             }
-        }
-
-        if (target.damageBuildupAmount >= target.maxDamageRingSize)
-        {
-            foreach (Animator icon in icons)
+            else if (targetMaxCount <= 15)
             {
-                icon.SetBool("Colored", true);
-                icon.SetBool("Explode", true);
+                maxCircleSize = 30;
             }
-            target.damageBuildupAmount = 0;
-            target.SetWeakenedTimer();
+            else
+            {
+                maxCircleSize = 50;
+            }
+
+            //int fullCircle = 30;
+            int angleInc = 360 / maxCircleSize;
+            //currentRingCount
+
+
+            List<Animator> icons = new List<Animator>();
+
+            for (int i = 0; i < target.maxDamageRingSize; i++)
+            {
+                int a = i * angleInc;
+
+                Vector3 pos = RandomCircle(locationHolder.transform.position, 0.75f, a);
+                GameObject smallIcon = Instantiate(damageBarIcon, pos, Quaternion.identity, locationHolder.transform);
+
+                if (i < target.damageBuildupAmount)
+                {
+                    icons.Add(smallIcon.GetComponent<Animator>());
+                }
+            }
+
+            if (target.damageBuildupAmount >= target.maxDamageRingSize)
+            {
+                foreach (Animator icon in icons)
+                {
+                    icon.SetBool("Colored", true);
+                    icon.SetBool("Explode", true);
+                }
+                target.damageBuildupAmount = 0;
+                target.SetWeakenedTimer();
+
+                fullyShowBarTime *= 1.5f; // holds the delay a bit longer to show it is filled
+            }
+            else
+            {
+                for (int i = 0; i < icons.Count; i++)
+                {
+                    icons[i].SetBool("Colored", true);
+                    yield return new WaitForSeconds(time);
+                }
+            }
         }
         else
         {
-            for (int i = 0; i < icons.Count; i++)
-            {
-                yield return new WaitForSeconds(.15f);
-                icons[i].SetBool("Colored", true);
-            }
+            time /= 2;
         }
+        
 
-        yield return new WaitForSeconds(time);
+        yield return new WaitForSeconds(fullyShowBarTime);
 
         damageFinished = true;
 
@@ -600,7 +631,7 @@ public class BattleController : MonoBehaviour
     //}
 
     /// <param name="charToMove">Participant moving</param>
-    IEnumerator MoveParticipant(BattleParticipant charToMove)
+    IEnumerator MoveParticipant(BattleParticipant charToMove)// single target
     {
         attackFinished = false;
         damageFinished = false;
@@ -615,11 +646,11 @@ public class BattleController : MonoBehaviour
 
         BattleParticipant charTarget =  FindTarget(selection);
 
+            spriteAnim = charTarget.participantAnim;
         if (currentTurn >= CurrentTurn.Enemy1)
         {
             destination.x = charTarget.character.transform.position.x + 1; //GameObject.Find("Agatha").transform.position.x + 1;
             destination.z = charTarget.character.transform.position.z;
-            spriteAnim = charTarget.participantAnim;
         }
         else
         {
@@ -716,6 +747,103 @@ public class BattleController : MonoBehaviour
         
         ChangeTurn();
     }
+    IEnumerator MoveParticipant(BattleParticipant charToMove, Vector3 standingLocation)// multiple targets
+    {
+        attackFinished = false;
+        damageFinished = false;
+        if (currentTurn < CurrentTurn.Enemy1)
+        {
+            RaiseIcons();
+        }
+
+        Vector3 destination = standingLocation;
+
+        Vector3 moveTo;
+
+        BattleParticipant charTarget = FindTarget(selection);
+
+        spriteAnim = charTarget.participantAnim;
+
+            SetCamFocus(charToMove.character, charTarget.character);
+
+
+        if (currentTurn < CurrentTurn.Enemy1)
+        {
+            actionCommand.ActivateActionCommand(destination.x, destination.z);
+
+            if (currentTurn == CurrentTurn.Main)
+            {
+                actionCommand.HoldLeft();
+            }
+            else
+            {
+                actionCommand.TimedA();
+            }
+        }
+
+        yield return new WaitForSeconds(0.5f);// delay before starting to walk to target
+
+        charToMove.participantAnim.SetBool("Walking", true);
+
+        while (charToMove.character.transform.position.x != destination.x || charToMove.character.transform.position.z != destination.z)
+        {
+            moveTo = Vector3.MoveTowards(charToMove.character.transform.position, new Vector3(destination.x, charToMove.character.transform.position.y, destination.z), walkingRate * Time.fixedDeltaTime);
+            charToMove.character.GetComponent<Rigidbody>().MovePosition(moveTo);
+            yield return new WaitForSeconds(0.01f);
+        }
+        charToMove.participantAnim.SetBool("Walking", false);
+        charToMove.participantAnim.SetTrigger("Attacking");
+
+        //if(currentTurn != CurrentTurn.Enemy1)
+        //{
+        //    actionCommand.ActivateActionCommand(character.transform.position.x);
+        //}
+        if (attackFinished) Debug.Log("Finished Early somehow");
+        yield return new WaitUntil(() => attackFinished);
+        //while (!attackFinished)
+        //{
+        //    yield return new WaitForSeconds(0.01f);
+        //}
+
+        SetCamFocus(null, null);// resets the camera
+
+
+        ///////asdasd
+        if (currentTurn < CurrentTurn.Enemy1) { yield return new WaitUntil(() => damageFinished); }
+        yield return new WaitForSeconds(.2f);// delay before starting to walk
+
+        charToMove.participantAnim.SetBool("Walking", true);
+
+        successBonusDamage = 0;
+
+        //anim.SetBool("Attacking", false);
+        charToMove.character.GetComponent<Animator>().SetTrigger("Flip");
+        charToMove.character.GetComponent<Animator>().SetBool("TurningLeft", true);
+
+
+        destination = charToMove.homePosition;
+        //for (int i = 0; i < participants.Count; i++)
+        //{
+        //    if (participants[i].charName == name)
+        //    {
+        //        destination = participants[i].homePosition.x;
+        //        break;
+        //    }
+        //}
+
+        while (charToMove.character.transform.position != destination)
+        {
+            moveTo = Vector3.MoveTowards(charToMove.character.transform.position, new Vector3(destination.x, charToMove.character.transform.position.y, destination.z), walkingRate * Time.fixedDeltaTime);
+            charToMove.character.GetComponent<Rigidbody>().MovePosition(moveTo);
+            yield return new WaitForSeconds(0.01f);
+        }
+
+        charToMove.character.GetComponent<Animator>().SetTrigger("Flip");
+        charToMove.character.GetComponent<Animator>().SetBool("TurningLeft", false);
+        charToMove.participantAnim.SetBool("Walking", false);
+
+        ChangeTurn();
+    }
 
     private BattleParticipant FindTarget(CurrentTurn target)
     {
@@ -766,12 +894,13 @@ public class BattleController : MonoBehaviour
             FindTarget(selection).currentHealth -= damage;
             Debug.Log(FindTarget(selection).charName + " has taken " + damage);
 
+            spriteAnim.SetTrigger("PhysicallyHit");
+
             CreateDamageBar(damage, FindTarget(selection).homePosition, FindTarget(selection));
 
             if (FindTarget(selection).currentHealth <= 0 && !FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().GetBool("isDead"))
             {
                 StartCoroutine(SpawnEXP(5, selection));
-                Debug.Log("here 2");
                 FindTarget(selection).character.GetComponent<Animator>().SetTrigger("isDead");
                 FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().SetBool("isDead", true);
                 //FindObjectOfType<BattleStartTrigger>().EndBattle();

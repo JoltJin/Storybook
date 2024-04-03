@@ -66,7 +66,7 @@ TextureImporter:
       213: 2227716156251514262
     second: D Pad  Right Arrow
   externalObjects: {}
-  serializedVersion: 11
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -83,10 +83,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -125,6 +127,8 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -136,6 +140,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -148,6 +153,33 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: iPhone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -604,9 +636,30 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-  spritePackingTag: 
+    nameFileIdTable:
+      A Button Down: 3559485949989676127
+      A Button Up: 1966522877307194641
+      D Pad  Right Arrow: 2227716156251514262
+      D Pad Blank: 7312050910118194
+      D Pad Down Arrow: -7255850682510816528
+      D Pad Down Pressed: 512561714482760014
+      D Pad Left Arrow: 5859092390276110260
+      D Pad Left Pressed: -496420226215816911
+      D Pad Right Pressed: -6484245512196502985
+      D Pad Up Arrow: -7209357087032783549
+      D Pad Up Pressed: -6898571622044544440
+      New Attack Bar  Red Big: -4946880630075933865
+      New Attack Bar  Unlit Red Large: -8225504964153306619
+      New Attack Bar 1: -3805250996992088862
+      New Attack Bar Green Big: -1934359114193402212
+      New Attack Bar Green Small: -9029615289387379475
+      New Attack Bar Red Small: 7795310928573594471
+      New Attack Bar Unlit Green Large: 5760511695458904521
+      New Attack Bar Unlit Small: 4375120255080591418
+      New Attack Bar Unlit Yellow: 231378086154030982
+      New Attack Bar Yellow: -8554650844415976323
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

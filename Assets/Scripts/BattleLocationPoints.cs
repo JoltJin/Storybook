@@ -6,10 +6,18 @@ using UnityEngine;
 public class BattleLocationPoints : MonoBehaviour
 {
     [SerializeField] private BattleLocationSets[] locations = new BattleLocationSets[1];
+    [SerializeField] private SpecialBattleLocationSets[] specialLocations = new SpecialBattleLocationSets[1];
     [Serializable]public class BattleLocationSets
     {
         public Vector3 location;
         public BattleController.CurrentTurn characterType;
+    }
+
+    [Serializable]
+    public class SpecialBattleLocationSets
+    {
+        public Vector3 location;
+        public BattleController.SpecialBattleLocations specialLocation;
     }
 
 
@@ -18,6 +26,18 @@ public class BattleLocationPoints : MonoBehaviour
         for (int i = 0; i < locations.Length; i++)
         {
             if (locations[i].characterType == charType)
+            {
+                return locations[i].location;
+            }
+        }
+        return Vector3.zero;
+    }
+
+    public Vector3 GetSpecialLocation(BattleController.SpecialBattleLocations charLocation)
+    {
+        for (int i = 0; i < specialLocations.Length; i++)
+        {
+            if (specialLocations[i].specialLocation == charLocation)
             {
                 return locations[i].location;
             }

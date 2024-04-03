@@ -84,7 +84,7 @@ TextureImporter:
       213: 9128827893819333843
     second: Agatha Deciding 4
   externalObjects: {}
-  serializedVersion: 11
+  serializedVersion: 12
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -101,10 +101,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -143,6 +145,8 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 1
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -154,6 +158,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -166,6 +171,33 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: iPhone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -748,9 +780,36 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-  spritePackingTag: 
+    nameFileIdTable:
+      Agatha Deciding 1: 225471285816453709
+      Agatha Deciding 2: 1076189802249669352
+      Agatha Deciding 3: -3568380031350214389
+      Agatha Deciding 4: 9128827893819333843
+      Agatha Guard 1: 8119240168466408819
+      Agatha Guard 2: -3354007866328986175
+      Agatha Idle Backward 1: -636207610985712953
+      Agatha Idle Backward 2: -4288679618773226387
+      Agatha Idle Backward 3: 2287247726433546076
+      Agatha Idle Forward 1: -6732601516868127550
+      Agatha Idle Forward 2: -7049201280211672470
+      Agatha Idle Forward 3: -1952336589893828842
+      Agatha Idle Forward 4: 4260363611487734092
+      Agatha Spell Cast 1: 6024239351750582900
+      Agatha Spell Cast 2: 8702217765024528002
+      Agatha Spell Cast 3: 3885745321567015098
+      Agatha Spell Charge 1: 6057035855679724362
+      Agatha Spell Charge 2: -589401908805287120
+      Agatha Standing Backward: -5117110062307356926
+      Agatha Standing Forward: -8095496972269792648
+      Agatha Talking 1: 5527543414122192011
+      Agatha Walking 1: -7211643835524593393
+      Agatha Walking 2: -1133631291683074996
+      Agatha Walking 3: -717697675855102494
+      Agatha Walking Backward 1: 6566695779770078053
+      Agatha Walking Backward 2: 8665296642393931243
+      Agatha Walking Backward 3: -3418065765536833225
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
