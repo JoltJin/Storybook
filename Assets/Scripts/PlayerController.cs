@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviour, CharacterAnimator
         soundEffects.Play();
     }
 
-        //setting up needed variables
+    // Setting up needed variables
     private void Start()
     {
         controller = gameObject.GetComponent<CharacterController>();
