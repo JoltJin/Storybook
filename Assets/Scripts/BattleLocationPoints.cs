@@ -39,7 +39,7 @@ public class BattleLocationPoints : MonoBehaviour
         {
             if (specialLocations[i].specialLocation == charLocation)
             {
-                return locations[i].location;
+                return specialLocations[i].location;
             }
         }
         return Vector3.zero;

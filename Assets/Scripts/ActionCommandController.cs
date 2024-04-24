@@ -28,6 +28,7 @@ public class ActionCommandController : MonoBehaviour
     internal bool chainAttack;
     private bool flashing;
     private bool properlyCharged = false;
+    private bool commandComplete = false;
 
     public void HoldLeft()
     {
@@ -90,7 +91,7 @@ public class ActionCommandController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!isActive)
+        if (!isActive || commandComplete)
         {
             return;
         }
@@ -203,6 +204,7 @@ public class ActionCommandController : MonoBehaviour
 
     private void TriggerBattle(bool bonus)
     {
+        commandComplete = true;
         battleController.TriggerBattleAction(bonus);
         DeactivateActionCommand();
     }
@@ -228,5 +230,7 @@ public class ActionCommandController : MonoBehaviour
         isActive = false;
         chargeBody.SetActive(false);
         child.SetActive(false);
+
+        commandComplete = false;
     }
 }

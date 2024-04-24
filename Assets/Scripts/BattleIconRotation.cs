@@ -6,25 +6,82 @@ public class BattleIconRotation : MonoBehaviour
 {
     [SerializeField] private Vector3[] positions = new Vector3[3];
     [SerializeField] private GameObject[] icons = new GameObject[3];
+
     private Vector3[] originalPositions;
+    private Vector3[] currentScale;
+    private Vector3[] originalScale;
     private Vector3 mainSlotPos;
+
+    private List<float> depths = new List<float>();
+    private int[] spriteOrder;
     public bool CanSelectOption { get; private set; } = true;
 
     public bool moving = false;
 
     private Animator anim;
 
+    private Color highlightedColor;
+
     private void Start()
     {
+        highlightedColor = new Color(.85f, .85f, .85f);
+
         anim = GetComponent<Animator>();
         mainSlotPos = icons[0].transform.localPosition;
 
-        originalPositions = new Vector3[positions.Length];
+        originalPositions  = new Vector3[positions.Length];
+
+        originalScale = new Vector3[positions.Length];
+        currentScale =  new Vector3[positions.Length];
+
+        spriteOrder = new int[icons[0].transform.childCount];
+
+        for (int i = 0; i < spriteOrder.Length; i++)
+        {
+            spriteOrder[i] = icons[0].transform.GetChild(i).GetComponent<SpriteRenderer>().sortingOrder;
+        }
+
+
 
         for (int i = 0; i < positions.Length; i++)
         {
             positions[i] = icons[i].transform.localPosition;
             originalPositions[i] = icons[i].transform.localPosition;
+            originalScale[i] = currentScale[i] = icons[i].transform.localScale;
+
+            if(depths.Count < 1 )
+            {
+                depths.Add(positions[i].z);
+            }else
+            {
+                for (int j = 0; j < depths.Count; j++)
+                {
+                    if (depths[j] == positions[i].z)
+                    {
+                        break;
+                    }
+                    else if(j == depths.Count - 1 && depths[j] != positions[i].z)
+                    {
+                        depths.Add(positions[i].z);
+                    }
+                }
+            }
+        }
+
+        depths.Sort();
+
+        for (int i = 0; i < positions.Length; i++)
+        {
+            for (int j = 0; j < depths.Count; j++)
+            {
+                if (positions[i].z >= depths[j])
+                {
+                    foreach (SpriteRenderer sprite in icons[i].GetComponentsInChildren<SpriteRenderer>())
+                    {
+                        sprite.sortingOrder -= 10;
+                    }
+                }
+            }
         }
 
         ResetColors();
@@ -39,6 +96,7 @@ public class BattleIconRotation : MonoBehaviour
             if (mainSlotPos == positions[i])
             {
                 type = icons[i].GetComponent<BattleIconType>().GetIcon();
+                Debug.Log("Slot is " + type);
                 break;
             }
         }
@@ -58,7 +116,7 @@ public class BattleIconRotation : MonoBehaviour
             {
                 foreach (SpriteRenderer spriteColor in icons[i].GetComponentsInChildren<SpriteRenderer>())
                 {
-                    spriteColor.color = Color.white;
+                    spriteColor.color = highlightedColor;
                 }
             }
             else
@@ -76,9 +134,12 @@ public class BattleIconRotation : MonoBehaviour
     {
         for (int i = 0; i < originalPositions.Length; i++)
         {
-            icons[i].transform.localPosition = originalPositions[i];
+            icons[i].transform.localPosition = positions[i] = originalPositions[i];
+            icons[i].transform.localScale = originalScale[i];
         }
 
+
+        mainSlotPos = icons[0].transform.localPosition;
         ResetColors();
     }
 
@@ -101,13 +162,15 @@ public class BattleIconRotation : MonoBehaviour
             if (i == positions.Length - 1)
             {
                 positions[i] = icons[0].transform.localPosition;
+                currentScale[i] = icons[0].transform.localScale;
             }
             else
             {
                 positions[i] = icons[i + 1].transform.localPosition;
+                currentScale[i] = icons[i + 1].transform.localScale;
             }
 
-            if(checker < positions[i].x)
+            if (checker < positions[i].x)
             {
                 checker = positions[i].x;
                 infront = i;
@@ -117,23 +180,42 @@ public class BattleIconRotation : MonoBehaviour
 
         moving = true;
 
+        //for (int i = 0; i < positions.Length; i++)
+        //{
+        //    if(i == infront)
+        //    {
+        //        foreach (SpriteRenderer sprite in icons[infront].GetComponentsInChildren<SpriteRenderer>())
+        //        {
+        //            sprite.sortingOrder += 10;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        foreach (SpriteRenderer sprite in icons[i].GetComponentsInChildren<SpriteRenderer>())
+        //        {
+        //            sprite.sortingOrder--;
+        //        }
+        //    }
+
+        //}
+
         for (int i = 0; i < positions.Length; i++)
         {
-            if(i == infront)
+            for (int j = 0; j < spriteOrder.Length; j++)
             {
-                foreach (SpriteRenderer sprite in icons[infront].GetComponentsInChildren<SpriteRenderer>())
-                {
-                    sprite.sortingOrder += 2;
-                }
-            }
-            else
-            {
-                foreach (SpriteRenderer sprite in icons[i].GetComponentsInChildren<SpriteRenderer>())
-                {
-                    sprite.sortingOrder--;
-                }
+                icons[i].transform.GetChild(j).GetComponent<SpriteRenderer>().sortingOrder = spriteOrder[j];
             }
 
+            for (int j = 0; j < depths.Count; j++)
+            {
+                if (positions[i].z >= depths[j])
+                {
+                    foreach (SpriteRenderer sprite in icons[i].GetComponentsInChildren<SpriteRenderer>())
+                    {
+                        sprite.sortingOrder -= 10;
+                    }
+                }
+            }
         }
 
         StartCoroutine(MoveIcons(0));
@@ -153,10 +235,12 @@ public class BattleIconRotation : MonoBehaviour
             if (i == 0)
             {
                 positions[i] = icons[positions.Length - 1].transform.localPosition;
+                currentScale[i] = icons[positions.Length - 1].transform.localScale;
             }
             else
             {
                 positions[i] = icons[i - 1].transform.localPosition;
+                currentScale[i] = icons[i - 1].transform.localScale;
             }
 
             if (checker > positions[i].x)
@@ -166,26 +250,45 @@ public class BattleIconRotation : MonoBehaviour
             }
         }
 
-        for (int i = 0; i < positions.Length; i++)
-        {
-            if (i == behind)
-            {
-                foreach (SpriteRenderer sprite in icons[behind].GetComponentsInChildren<SpriteRenderer>())
-                {
-                    sprite.sortingOrder -= 2;
-                }
-            }
-            else
-            {
-                foreach (SpriteRenderer sprite in icons[i].GetComponentsInChildren<SpriteRenderer>())
-                {
-                    sprite.sortingOrder++;
-                }
-            }
+        //for (int i = 0; i < positions.Length; i++)
+        //{
+        //    if (i == behind)
+        //    {
+        //        foreach (SpriteRenderer sprite in icons[behind].GetComponentsInChildren<SpriteRenderer>())
+        //        {
+        //            sprite.sortingOrder -= 10;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        foreach (SpriteRenderer sprite in icons[i].GetComponentsInChildren<SpriteRenderer>())
+        //        {
+        //            sprite.sortingOrder++;
+        //        }
+        //    }
 
-        }
+        //}
 
         moving = true;
+
+        for (int i = 0; i < positions.Length; i++)
+        {
+            for (int j = 0; j < spriteOrder.Length; j++)
+            {
+                icons[i].transform.GetChild(j).GetComponent<SpriteRenderer>().sortingOrder = spriteOrder[j];
+            }
+
+            for (int j = 0; j < depths.Count; j++)
+            {
+                if (positions[i].z >= depths[j])
+                {
+                    foreach (SpriteRenderer sprite in icons[i].GetComponentsInChildren<SpriteRenderer>())
+                    {
+                        sprite.sortingOrder -= 10;
+                    }
+                }
+            }
+        }
 
         //foreach (SpriteRenderer sprite in icons[icons.Length - 1].GetComponentsInChildren<SpriteRenderer>())
         //{
@@ -204,7 +307,7 @@ public class BattleIconRotation : MonoBehaviour
             {
                 foreach (SpriteRenderer spriteColor in icons[i].GetComponentsInChildren<SpriteRenderer>())
                 {
-                    spriteColor.color = Color.white;
+                    spriteColor.color = highlightedColor;
                 }
             }
             else
@@ -224,6 +327,8 @@ public class BattleIconRotation : MonoBehaviour
             for (int i = 0; i < positions.Length; i++)
             {
                 icons[i].transform.localPosition = Vector3.Lerp(icons[i].transform.localPosition, positions[i], time / duration);
+                icons[i].transform.localScale = Vector3.Lerp(icons[i].transform.localScale, currentScale[i], time / duration);
+
             }
             time += Time.deltaTime;
 

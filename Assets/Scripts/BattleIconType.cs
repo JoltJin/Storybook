@@ -6,7 +6,8 @@ using UnityEngine;
     {
         Main_Attack,
         Items,
-        Tactics
+        Tactics,
+        Special_Attack
     }
 public class BattleIconType : MonoBehaviour
 {

@@ -2,6 +2,7 @@ using Cinemachine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 using TMPro;
 using UnityEngine;
@@ -82,15 +83,15 @@ public class BattleController : MonoBehaviour
             this.character = character;
             participantAnim = character.transform.GetChild(0).GetComponentInChildren<Animator>();
 
-            if(character.transform.Find("Arrow Position"))
+            if(participantAnim.transform.Find("Arrow Position"))
             {
-                arrowLocation = character.transform.Find("Arrow Position").gameObject;
+                arrowLocation = participantAnim.transform.Find("Arrow Position").gameObject;
             }
             else
             {
                 Debug.Log(character + " doesn't have an arrow position added originally");
                 GameObject arrowSpawn = new GameObject("Temporary arrow");
-                arrowSpawn.transform.SetParent(character.transform);
+                arrowSpawn.transform.SetParent(participantAnim.transform);
                 arrowSpawn.transform.position = Vector3.up;
                 arrowLocation = arrowSpawn;
             }
@@ -147,6 +148,7 @@ public class BattleController : MonoBehaviour
 
     [SerializeField] private GameObject zoomCam;
     [SerializeField] private CinemachineTargetGroup targetGroup;
+    [SerializeField] private GameObject defaultFocus;
 
     [SerializeField] GameObject battleObjectHolder;
     [SerializeField] private Animator bookAnim;
@@ -169,6 +171,8 @@ public class BattleController : MonoBehaviour
     /// </summary>
     public GameObject selectArrow;
     private CurrentTurn selection;
+
+    private List<BattleParticipant> targetList = new List<BattleParticipant>();
 
     // Start is called before the first frame update
     void Start()
@@ -321,7 +325,7 @@ public class BattleController : MonoBehaviour
         {
             if (battleIcons.CanSelectOption)
             {
-                if(battleIcons.GetSlot() == IconType.Main_Attack)// if main attack
+                if (battleIcons.GetSlot() == IconType.Main_Attack)// if main attack
                 {
                     if (!selectArrow.activeInHierarchy)// if nothing has been selected yet put out an arrow to allow selection
                     {
@@ -336,31 +340,54 @@ public class BattleController : MonoBehaviour
                         selectArrow.SetActive(false);
 
                         FindTarget(currentTurn).participantAnim.SetBool("Deciding", false);
+
+                        targetList.Clear();
+                        targetList.Add(FindTarget(selection));
+                        Debug.Log("reset targets");
+
+                        foreach (BattleParticipant target in targetList)
+                        {
+                            target.participantAnim.SetBool("Targeted", true);
+                        }
 
                         StartCoroutine(MoveParticipant(FindTarget(currentTurn)));// start the movement of the action for the attack
                     }
                 }
-                else if(battleIcons.GetSlot() == IconType.Tactics)// if the tactics option is selected
+                else if (battleIcons.GetSlot() == IconType.Items)// if the spells option is selected
                 {
-                    if (!selectArrow.activeInHierarchy)// if nothing has been selected yet put out an arrow to allow selection
+                    selectArrow.SetActive(false);
+
+                    FindTarget(currentTurn).participantAnim.SetBool("Deciding", false);
+
+                    targetList.Clear();
+
+                    foreach (BattleParticipant target in participants)
                     {
-                        selectArrow.SetActive(true);
-
-                        SetBaseSelection(true);
-
-                        canRotateIcons = false;
+                        if (target.charRole > CurrentTurn.Partner)
+                        {
+                            targetList.Add(target);
+                        }
                     }
-                    else if (selectArrow.activeInHierarchy)// if something has been selected already then identify who was selected and turn off the arrow
+
+                    foreach (BattleParticipant target in targetList)
                     {
-                        selectArrow.SetActive(false);
-
-                        FindTarget(currentTurn).participantAnim.SetBool("Deciding", false);
-
-                        StartCoroutine(MoveParticipant(FindTarget(currentTurn), FindObjectOfType<BattleLocationPoints>().GetSpecialLocation(SpecialBattleLocations.PlayerCast)));
-                        // start a different movement using a special location as the target to move towards
+                        target.participantAnim.SetBool("Targeted", true);
                     }
+
+                    PlayerData.currentMP -= 2;
+
+                    StartCoroutine(MoveParticipant(FindTarget(currentTurn), SpecialBattleLocations.PlayerCast));
+                    // start a different movement using a special location as the target to move towards
                 }
-                
+                else if (battleIcons.GetSlot() == IconType.Tactics)// if the tactics option is selected
+                {
+                    selectArrow.SetActive(false);
+
+                    FindTarget(currentTurn).participantAnim.SetBool("Deciding", false);
+
+                    StartCoroutine(MoveParticipant(FindTarget(currentTurn), SpecialBattleLocations.PlayerFlee));
+                    // start a different movement using a special location as the target to move towards
+                }
             }
             else if (canDefend)
             {
@@ -458,7 +485,7 @@ public class BattleController : MonoBehaviour
 
     private void SetCamFocus(GameObject focus1, GameObject focus2)
     {
-        if(focus1 == null)
+        if(focus1 == null || focus2 == null)
         {
             zoomCam.SetActive(false);
         }
@@ -567,13 +594,13 @@ public class BattleController : MonoBehaviour
 
         Destroy(locationHolder);
     }
-    IEnumerator SpawnEXP(int numberOfExp, CurrentTurn target)
+    IEnumerator SpawnEXP(int numberOfExp, BattleParticipant target)
     {
         int currentExp = 0;
         while (currentExp < numberOfExp)
         {
             currentExp++;
-            GameObject exp = Instantiate(expPrefab, FindTarget(target).character.transform.GetChild(1).transform.position, Quaternion.identity);
+            GameObject exp = Instantiate(expPrefab, target.character.transform.GetChild(1).transform.position, Quaternion.identity);
 
             float randX = UnityEngine.Random.Range(0f, 4f);
             float randY = UnityEngine.Random.Range(0f, 4f);
@@ -644,9 +671,10 @@ public class BattleController : MonoBehaviour
 
         Vector3 moveTo;
 
-        BattleParticipant charTarget =  FindTarget(selection);
+        BattleParticipant charTarget = targetList[0];
 
             spriteAnim = charTarget.participantAnim;
+
         if (currentTurn >= CurrentTurn.Enemy1)
         {
             destination.x = charTarget.character.transform.position.x + 1; //GameObject.Find("Agatha").transform.position.x + 1;
@@ -668,7 +696,6 @@ public class BattleController : MonoBehaviour
         //    GameObject.Find(name).transform.position = GameObject.Find("Jackalope").transform.position + Vector3.left;
         //    Debug.Log(name + " attacked");
         //}
-
 
         if (currentTurn < CurrentTurn.Enemy1)
         {
@@ -710,6 +737,7 @@ public class BattleController : MonoBehaviour
 
         SetCamFocus(null, null);// resets the camera
 
+        charTarget.participantAnim.SetBool("Targeted", false);
 
         ///////asdasd
         if (currentTurn < CurrentTurn.Enemy1) { yield return new WaitUntil(() => damageFinished); }
@@ -747,8 +775,10 @@ public class BattleController : MonoBehaviour
         
         ChangeTurn();
     }
-    IEnumerator MoveParticipant(BattleParticipant charToMove, Vector3 standingLocation)// multiple targets
+    IEnumerator MoveParticipant(BattleParticipant charToMove, SpecialBattleLocations specialLoc)// multiple targets
     {
+        Vector3 destination = FindObjectOfType<BattleLocationPoints>().GetSpecialLocation(specialLoc);
+
         attackFinished = false;
         damageFinished = false;
         if (currentTurn < CurrentTurn.Enemy1)
@@ -756,18 +786,20 @@ public class BattleController : MonoBehaviour
             RaiseIcons();
         }
 
-        Vector3 destination = standingLocation;
+        //Vector3 destination = standingLocation;
 
         Vector3 moveTo;
 
-        BattleParticipant charTarget = FindTarget(selection);
+        
 
-        spriteAnim = charTarget.participantAnim;
+        //spriteAnim = charTarget.participantAnim;
+        if(specialLoc == SpecialBattleLocations.PlayerFlee)
+        {
+            SetCamFocus(charToMove.character, defaultFocus);
+        }
 
-            SetCamFocus(charToMove.character, charTarget.character);
 
-
-        if (currentTurn < CurrentTurn.Enemy1)
+        if (specialLoc == SpecialBattleLocations.PlayerCast)
         {
             actionCommand.ActivateActionCommand(destination.x, destination.z);
 
@@ -780,10 +812,20 @@ public class BattleController : MonoBehaviour
                 actionCommand.TimedA();
             }
         }
+        else if(specialLoc == SpecialBattleLocations.PlayerFlee)
+        {
+            actionCommand.TimedA();
+        }
 
         yield return new WaitForSeconds(0.5f);// delay before starting to walk to target
 
         charToMove.participantAnim.SetBool("Walking", true);
+
+        if(specialLoc == SpecialBattleLocations.PlayerFlee)
+        {
+            charToMove.character.GetComponent<Animator>().SetTrigger("Flip");
+            charToMove.character.GetComponent<Animator>().SetBool("TurningLeft", true);
+        }
 
         while (charToMove.character.transform.position.x != destination.x || charToMove.character.transform.position.z != destination.z)
         {
@@ -807,6 +849,10 @@ public class BattleController : MonoBehaviour
 
         SetCamFocus(null, null);// resets the camera
 
+        foreach (BattleParticipant target in targetList)
+        {
+            target.participantAnim.SetBool("Targeted", false);
+        }
 
         ///////asdasd
         if (currentTurn < CurrentTurn.Enemy1) { yield return new WaitUntil(() => damageFinished); }
@@ -817,8 +863,15 @@ public class BattleController : MonoBehaviour
         successBonusDamage = 0;
 
         //anim.SetBool("Attacking", false);
-        charToMove.character.GetComponent<Animator>().SetTrigger("Flip");
-        charToMove.character.GetComponent<Animator>().SetBool("TurningLeft", true);
+
+        if (specialLoc == SpecialBattleLocations.PlayerFlee)
+        {
+            charToMove.character.GetComponent<Animator>().SetTrigger("Flip");
+            charToMove.character.GetComponent<Animator>().SetBool("TurningLeft", false);
+        }
+
+        ////charToMove.character.GetComponent<Animator>().SetTrigger("Flip");
+        ////charToMove.character.GetComponent<Animator>().SetBool("TurningLeft", true);
 
 
         destination = charToMove.homePosition;
@@ -838,8 +891,8 @@ public class BattleController : MonoBehaviour
             yield return new WaitForSeconds(0.01f);
         }
 
-        charToMove.character.GetComponent<Animator>().SetTrigger("Flip");
-        charToMove.character.GetComponent<Animator>().SetBool("TurningLeft", false);
+        //charToMove.character.GetComponent<Animator>().SetTrigger("Flip");
+        //charToMove.character.GetComponent<Animator>().SetBool("TurningLeft", false);
         charToMove.participantAnim.SetBool("Walking", false);
 
         ChangeTurn();
@@ -856,20 +909,20 @@ public class BattleController : MonoBehaviour
         }
         return null;
     }
-    public void TakeDamage(int damageAmount)
-    {
-        FindTarget(selection).TakeDamage(damageAmount);
-        Debug.Log(FindTarget(selection).charName + " has taken " + damageAmount);
+    //public void TakeDamage(int damageAmount)
+    //{
+    //    FindTarget(selection).TakeDamage(damageAmount);
+    //    Debug.Log(FindTarget(selection).charName + " has taken " + damageAmount);
 
-        if (FindTarget(selection).currentHealth <= 0 && !FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().GetBool("isDead"))
-        {
-            StartCoroutine(SpawnEXP(5, selection));
-            Debug.Log("here 1");
-            FindTarget(selection).character.GetComponent<Animator>().SetTrigger("isDead");
-            FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().SetBool("isDead", true);
-            //FindObjectOfType<BattleStartTrigger>().EndBattle();
-        }
-    }
+    //    if (FindTarget(selection).currentHealth <= 0 && !FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().GetBool("isDead"))
+    //    {
+    //        StartCoroutine(SpawnEXP(5, selection));
+    //        Debug.Log("here 1");
+    //        FindTarget(selection).character.GetComponent<Animator>().SetTrigger("isDead");
+    //        FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().SetBool("isDead", true);
+    //        //FindObjectOfType<BattleStartTrigger>().EndBattle();
+    //    }
+    //}
     public void TakeDamage()
     {
         if (currentTurn >= CurrentTurn.Enemy1)
@@ -879,32 +932,55 @@ public class BattleController : MonoBehaviour
             if (reduceDamage)
                 damageReduction = 1;
 
-            int damage = (successBonusDamage + FindTarget(currentTurn).attack) - (FindTarget(selection).defense + damageReduction);
+            
 
-            FindTarget(CurrentTurn.Main).TakeDamage(damage);
+            foreach (BattleParticipant target in targetList)
+            {
+                int damage = (successBonusDamage + FindTarget(currentTurn).attack) - (target.defense + damageReduction);
+                target.TakeDamage(damage);
+                target.participantAnim.SetTrigger("Hit");
+            }
+
+            //FindTarget(CurrentTurn.Main).TakeDamage(damage);
             mainHp[0].text = FindTarget(CurrentTurn.Main).currentHealth.ToString();
             mainHp[1].text = "/";
             mainHp[2].text = FindTarget(CurrentTurn.Main).maxHealth.ToString();
 
-            spriteAnim.SetTrigger("Hit");
+            //spriteAnim.SetTrigger("Hit");
         }
         else
         {
-            int damage = (successBonusDamage + FindTarget(currentTurn).attack) - FindTarget(selection).defense;
-            FindTarget(selection).currentHealth -= damage;
-            Debug.Log(FindTarget(selection).charName + " has taken " + damage);
 
-            spriteAnim.SetTrigger("PhysicallyHit");
-
-            CreateDamageBar(damage, FindTarget(selection).homePosition, FindTarget(selection));
-
-            if (FindTarget(selection).currentHealth <= 0 && !FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().GetBool("isDead"))
+            foreach (BattleParticipant target in targetList)
             {
-                StartCoroutine(SpawnEXP(5, selection));
-                FindTarget(selection).character.GetComponent<Animator>().SetTrigger("isDead");
-                FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().SetBool("isDead", true);
-                //FindObjectOfType<BattleStartTrigger>().EndBattle();
+                int damage = (successBonusDamage + FindTarget(currentTurn).attack) - target.defense;
+                target.TakeDamage(damage);
+                target.participantAnim.SetTrigger("PhysicallyHit");
+                CreateDamageBar(damage, target.homePosition, target);
+
+                if (target.currentHealth <= 0 && !target.character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().GetBool("isDead"))
+                {
+                    StartCoroutine(SpawnEXP(5, target));
+                    target.character.GetComponent<Animator>().SetTrigger("isDead");
+                    target.character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().SetBool("isDead", true);
+                    //FindObjectOfType<BattleStartTrigger>().EndBattle();
+                    Debug.Log(target.charName + " has taken " + damage);
+                }
             }
+
+            //FindTarget(selection).currentHealth -= damage;
+
+            //spriteAnim.SetTrigger("PhysicallyHit");
+
+            //CreateDamageBar(damage, FindTarget(selection).homePosition, FindTarget(selection));
+
+            //if (FindTarget(selection).currentHealth <= 0 && !FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().GetBool("isDead"))
+            //{
+            //    StartCoroutine(SpawnEXP(5, selection));
+            //    FindTarget(selection).character.GetComponent<Animator>().SetTrigger("isDead");
+            //    FindTarget(selection).character.GetComponentInChildren<SpriteRenderer>().GetComponent<Animator>().SetBool("isDead", true);
+            //    //FindObjectOfType<BattleStartTrigger>().EndBattle();
+            //}
         }
     }
     public void RemoveEnemy(CurrentTurn deadEnemy)
@@ -931,6 +1007,7 @@ public class BattleController : MonoBehaviour
         if(currentTurn == CurrentTurn.Main)
         {
             FindTarget(currentTurn).character.transform.GetChild(0).GetComponent<Animator>().SetTrigger("AttackCharged");
+            Debug.Log("triggered");
             //GameObject.Find("Agatha").transform
         }
 
@@ -987,7 +1064,8 @@ public class BattleController : MonoBehaviour
 
     private void PlaceArrow()
     {
-        selectArrow.transform.position = FindTarget(selection).arrowLocation.transform.position;
+        selectArrow.transform.parent = FindTarget(selection).arrowLocation.transform;
+        selectArrow.transform.localPosition = Vector3.zero;
     }
 
     private void SelectTeammate()
@@ -1028,6 +1106,8 @@ public class BattleController : MonoBehaviour
 
             // enemy moving
             selection = CurrentTurn.Main;
+            targetList.Clear();
+            targetList.Add(FindTarget(selection));
             StartCoroutine(MoveParticipant(FindTarget(currentTurn)));
         }
         else// if its player turn and they can move
