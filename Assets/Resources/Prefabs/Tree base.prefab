@@ -50,6 +50,7 @@ MonoBehaviour:
   maxAnimationTime: 1
   minWobbleForward: 10
   maxWobbleForward: 15
+  reverse: 0
 --- !u!208 &-8868940792999284954
 NavMeshObstacle:
   m_ObjectHideFlags: 0
@@ -78,6 +79,8 @@ GameObject:
   - component: {fileID: 3329117481784256164}
   - component: {fileID: 7861927896522393962}
   - component: {fileID: 4107809071846325671}
+  - component: {fileID: 482067670238586892}
+  - component: {fileID: 8439700039997952407}
   m_Layer: 0
   m_Name: Tree
   m_TagString: Untagged
@@ -187,3 +190,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5465b910d7548e347a16cff54ccf4617, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &482067670238586892
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2477439397758605010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25d45c6fcbb2bd944871c02415b6cef0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  freezeXAxis: 1
+  freezeYAxis: 0
+  freezeZAxis: 1
+  isFlipped: 0
+--- !u!114 &8439700039997952407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2477439397758605010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c5f29cbbd3c83148868f055861bce0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fadeTimer: 0.5
+  fadeGoal: 0.4

@@ -46,7 +46,35 @@ public class BattlePlayerCommunicator : MonoBehaviour
 
     public void DamageEnemy()
     {
-        Debug.Log(battleControl);
         battleControl.TakeDamage();
+    }
+
+    public void ColorRed()
+    {
+        sprite.color = new Color(1, .5f, .5f);
+    }
+
+    public void ColorNormal() 
+    {
+        sprite.color = Color.white;
+    
+    }
+    public void ColorTransparent()
+    {
+        StartCoroutine(ColorFader());
+    }
+
+    IEnumerator ColorFader()
+    {
+        float time = 0;
+        float duration = .5f;
+        Color baseColor = sprite.color;
+        Color destAlpha = new Color(1, 1, 1, .5f);
+        while (time < duration)
+        {
+            sprite.color = Color.Lerp(baseColor, destAlpha, time / duration);
+            time += Time.deltaTime;
+            yield return null;
+        }
     }
 }

@@ -11,7 +11,7 @@ public class DistanceToScreenSorter : MonoBehaviour
     private float secToWait = .15f;
     
     // Start is called before the first frame update
-    void Start()
+    void OnEnable()
     {
         if(GetComponent<ParticleSystem>())
         {
@@ -27,6 +27,10 @@ public class DistanceToScreenSorter : MonoBehaviour
         StartCoroutine(CheckDistanceFromScreen());
     }
 
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+    }
 
     IEnumerator CheckDistanceFromScreen()
     {

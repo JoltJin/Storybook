@@ -26,22 +26,20 @@ public class PlayerController : MonoBehaviour, CharacterAnimator
     [SerializeField] private GameObject hudBar;
     private bool fader;
 
-    [SerializeField] private List<AudioClip> walkingSounds = new List<AudioClip>();
-    [SerializeField] AudioSource soundEffects;
-
     public static bool isBusy = false;
+    public static bool canBattle = true;
 
-    public void PlaySounds()
-    {
-        
-        soundEffects.clip = walkingSounds[Random.Range(0, walkingSounds.Count)];
-        soundEffects.pitch = 1f + Random.Range(-.25f, .25f);
-        soundEffects.Play();
-    }
+    private bool isAirborne = false;
 
     // Setting up needed variables
     private void Start()
     {
+        if(PlayerData.party.Count == 0)
+        {
+            PlayerData.party.Add(new PartyStats("Agatha", 10, 1, 0));
+        }
+
+
         controller = gameObject.GetComponent<CharacterController>();
         cam = Camera.main.transform;
         dustParticles = GetComponentInChildren<ParticleSystem>().gameObject.transform;
@@ -140,13 +138,28 @@ public class PlayerController : MonoBehaviour, CharacterAnimator
         }
 
 
+        if(isAirborne && groundedPlayer || playerVelocity.y == 0 && spriteAnim.GetBool("Airborne"))
+        {
+            spriteAnim.SetTrigger("Landing");
+            isAirborne = false;
+        }
+        if(playerVelocity.y < -1.59f && !isAirborne)
+        {
+            Debug.Log(playerVelocity.y);
+            spriteAnim.SetTrigger("Airborne");
+            isAirborne = true;
+        }
+
 
 
         //// Changes the height position of the player..
         if (Input.GetButtonDown("Jump") && groundedPlayer)
         {
             playerVelocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravityValue);
+
+            spriteAnim.SetTrigger("Jumping");
         }
+
 
         playerVelocity.y += gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
@@ -194,20 +207,24 @@ public class PlayerController : MonoBehaviour, CharacterAnimator
 
     public void BasicAnimations(float horizontal, float vertical)
     {
-        if (horizontal != 0 || vertical != 0)
+        if(!isAirborne)
         {
-            if (vertical > 0)
-                spriteAnim.SetBool("FacingForward", false);
-            else if (vertical <= 0)
-                spriteAnim.SetBool("FacingForward", true);
+            if (horizontal != 0 || vertical != 0)
+            {
+                if (vertical > 0)
+                    spriteAnim.SetBool("FacingForward", false);
+                else if (vertical <= 0)
+                    spriteAnim.SetBool("FacingForward", true);
 
-            spriteAnim.SetBool("isWalking", true);
-            IsMoving = true;
+                spriteAnim.SetBool("isWalking", true);
+                IsMoving = true;
+            }
+            else
+            {
+                spriteAnim.SetBool("isWalking", false);
+                IsMoving = false;
+            }
         }
-        else
-        {
-            spriteAnim.SetBool("isWalking", false);
-            IsMoving = false;
-        }
+        
     }
 }

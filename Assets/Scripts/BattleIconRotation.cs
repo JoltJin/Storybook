@@ -96,7 +96,6 @@ public class BattleIconRotation : MonoBehaviour
             if (mainSlotPos == positions[i])
             {
                 type = icons[i].GetComponent<BattleIconType>().GetIcon();
-                Debug.Log("Slot is " + type);
                 break;
             }
         }

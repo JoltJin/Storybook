@@ -165,8 +165,8 @@ TextureImporter:
       name: Jackalope Idle 1
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
+        x: 64
+        y: 64
         width: 64
         height: 64
       alignment: 7
@@ -186,8 +186,8 @@ TextureImporter:
       name: Jackalope Moving 1
       rect:
         serializedVersion: 2
-        x: 64
-        y: 0
+        x: 128
+        y: 64
         width: 64
         height: 64
       alignment: 7
@@ -207,8 +207,8 @@ TextureImporter:
       name: Jackalope Moving 2
       rect:
         serializedVersion: 2
-        x: 128
-        y: 0
+        x: 192
+        y: 64
         width: 64
         height: 64
       alignment: 7
@@ -228,8 +228,8 @@ TextureImporter:
       name: Jackalope Moving 3
       rect:
         serializedVersion: 2
-        x: 192
-        y: 0
+        x: 256
+        y: 64
         width: 64
         height: 64
       alignment: 7
@@ -249,7 +249,7 @@ TextureImporter:
       name: Jackalope Idle 2
       rect:
         serializedVersion: 2
-        x: 256
+        x: 0
         y: 0
         width: 64
         height: 64
@@ -270,7 +270,7 @@ TextureImporter:
       name: Jackalope Idle 3
       rect:
         serializedVersion: 2
-        x: 320
+        x: 64
         y: 0
         width: 64
         height: 64
@@ -291,7 +291,7 @@ TextureImporter:
       name: Jackalope Idle 4
       rect:
         serializedVersion: 2
-        x: 384
+        x: 128
         y: 0
         width: 64
         height: 64
@@ -313,7 +313,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 64
+        y: 128
         width: 64
         height: 64
       alignment: 7
@@ -334,7 +334,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 64
-        y: 64
+        y: 128
         width: 64
         height: 64
       alignment: 7
@@ -355,7 +355,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 128
-        y: 64
+        y: 128
         width: 64
         height: 64
       alignment: 7
@@ -376,7 +376,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 192
-        y: 64
+        y: 128
         width: 64
         height: 64
       alignment: 7
@@ -397,7 +397,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 256
-        y: 64
+        y: 128
         width: 64
         height: 64
       alignment: 7
@@ -417,7 +417,7 @@ TextureImporter:
       name: Jackalope Attack 1 - 6
       rect:
         serializedVersion: 2
-        x: 320
+        x: 0
         y: 64
         width: 64
         height: 64
@@ -438,8 +438,8 @@ TextureImporter:
       name: Jackalope Walking Back 1
       rect:
         serializedVersion: 2
-        x: 0
-        y: 128
+        x: 192
+        y: 256
         width: 64
         height: 64
       alignment: 7
@@ -459,8 +459,8 @@ TextureImporter:
       name: Jackalope Walking Back 2
       rect:
         serializedVersion: 2
-        x: 64
-        y: 128
+        x: 256
+        y: 256
         width: 64
         height: 64
       alignment: 7
@@ -480,8 +480,8 @@ TextureImporter:
       name: Jackalope Walking Back 3
       rect:
         serializedVersion: 2
-        x: 128
-        y: 128
+        x: 0
+        y: 192
         width: 64
         height: 64
       alignment: 7
@@ -501,8 +501,8 @@ TextureImporter:
       name: Jackalope Walking Back 4
       rect:
         serializedVersion: 2
-        x: 192
-        y: 128
+        x: 64
+        y: 192
         width: 64
         height: 64
       alignment: 7
@@ -522,8 +522,8 @@ TextureImporter:
       name: Jackalope Walking Back 5
       rect:
         serializedVersion: 2
-        x: 256
-        y: 128
+        x: 128
+        y: 192
         width: 64
         height: 64
       alignment: 7
@@ -543,8 +543,8 @@ TextureImporter:
       name: Jackalope Walking Back 6
       rect:
         serializedVersion: 2
-        x: 320
-        y: 128
+        x: 192
+        y: 192
         width: 64
         height: 64
       alignment: 7
@@ -564,8 +564,8 @@ TextureImporter:
       name: Jackalope Walking Back 7
       rect:
         serializedVersion: 2
-        x: 384
-        y: 128
+        x: 256
+        y: 192
         width: 64
         height: 64
       alignment: 7
@@ -586,7 +586,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 192
+        y: 256
         width: 64
         height: 64
       alignment: 7
@@ -607,7 +607,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 64
-        y: 192
+        y: 256
         width: 64
         height: 64
       alignment: 7
@@ -628,7 +628,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 128
-        y: 192
+        y: 256
         width: 64
         height: 64
       alignment: 7
@@ -678,6 +678,10 @@ TextureImporter:
       Jackalope Walking Back 5: -1053991257
       Jackalope Walking Back 6: -1345512030
       Jackalope Walking Back 7: -82007306
+      Test 1: -720958977
+      Test 2: 537648509
+      Test 3: -788049593
+      Test 4: -1008539262
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

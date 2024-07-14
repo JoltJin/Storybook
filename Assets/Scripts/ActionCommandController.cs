@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class ActionCommandController : MonoBehaviour
 {
@@ -20,6 +22,8 @@ public class ActionCommandController : MonoBehaviour
 
     private float firstCheck = .5f, secondCheck = 1f, thirdCheck = 1.5f, finalCheck = 2;
 
+    
+
     private bool isActive;
     private GameObject child;
     private float counter;
@@ -30,12 +34,327 @@ public class ActionCommandController : MonoBehaviour
     private bool properlyCharged = false;
     private bool commandComplete = false;
 
+    private Action flee;
+
+    [SerializeField] public MagicActionCommandController magicAction;
+    [System.Serializable]public class MagicActionCommandController
+    {
+        private enum direction
+        {
+            Up,
+            Down,
+            Left,
+            Right,
+        }
+
+        [SerializeField] private GameObject[] arrows = new GameObject[4];
+
+        //[SerializeField] private
+        public GameObject MagicActionObject;
+        [SerializeField] private GameObject chainBar;
+        [SerializeField] private SpriteRenderer[] individualChain = new SpriteRenderer[5];
+        private KeyCode[] inputs = new KeyCode[] { KeyCode.UpArrow, KeyCode.UpArrow, KeyCode.DownArrow, KeyCode.LeftArrow, KeyCode.RightArrow };
+        [SerializeField] private Sprite lightRune, darkRune, waterRune, fireRune, natureRune, windRune;
+        private int chainPlacement = 0;
+        private int inputsCorrect = 0;
+        [SerializeField] private GameObject inputChoices;
+        [SerializeField] private GameObject[] choice = new GameObject[4];
+
+        private BattleController battleController;
+
+        private bool isPressed = false;
+
+        private Action<int, Status, int, int, int> finishAction;
+
+        private Color fullFaded = new Color(.5f, .5f, .5f, .25f);
+        private Color highlightFaded = new Color(.75f, .75f, .75f, .9f);
+        private Color correct = Color.white; //new Color(.8f, 1f, .8f, 1f);
+        private Color wrong = new Color(.25f, .25f, .25f, 1f);
+        private Color invisible = new Color(.5f, .5f, .5f, 0f);
+
+
+        private Color buttonPressed = new Color(.75f, .75f, .75f, .9f);
+        public void Start()
+        {
+            MagicActionObject.SetActive(false);
+            chainPlacement = 0;
+            inputsCorrect = 0;
+
+            battleController = FindObjectOfType<BattleController>();
+        }
+
+        private void PressButtonVisual(direction direction)
+        {
+            if(isPressed)
+            {
+                arrows[(int)direction].transform.GetChild(0).localScale = Vector3.one * 1.25f;
+                arrows[(int)direction].GetComponent<SpriteRenderer>().color = buttonPressed;
+                arrows[(int)direction].transform.GetChild(0).GetComponent<SpriteRenderer>().color = buttonPressed;
+
+                if(arrows[(int)direction].transform.parent.localPosition.x != 0)
+                {
+                    if (arrows[(int)direction].transform.parent.localPosition.x < 0)
+                    {
+                        arrows[(int)direction].transform.localPosition = new Vector3(.1f, 0, 0);
+                    }
+                    else if (arrows[(int)direction].transform.parent.localPosition.x > 0)
+                    {
+                        arrows[(int)direction].transform.localPosition = new Vector3(-.1f, 0, 0);
+                    }
+                }
+                else if(arrows[(int)direction].transform.parent.localPosition.y != 0)
+                {
+                    if (arrows[(int)direction].transform.parent.localPosition.y < 0)
+                    {
+                        arrows[(int)direction].transform.localPosition = new Vector3(0, .1f, 0);
+                    }
+                    else if (arrows[(int)direction].transform.parent.localPosition.y > 0)
+                    {
+                        arrows[(int)direction].transform.localPosition = new Vector3(0, -.1f, 0);
+                    }
+                }
+            }
+            else
+            {
+                arrows[(int)direction].transform.GetChild(0).localScale = Vector3.one;
+                arrows[(int)direction].GetComponent<SpriteRenderer>().color = Color.white;
+                arrows[(int)direction].transform.GetChild(0).GetComponent<SpriteRenderer>().color = Color.white;
+
+                if (arrows[(int)direction].transform.parent.localPosition.x != 0)
+                {
+                    if (arrows[(int)direction].transform.parent.localPosition.x < 0)
+                    {
+                        arrows[(int)direction].transform.localPosition = new Vector3(0, 0, 0);
+                    }
+                    else if (arrows[(int)direction].transform.parent.localPosition.x > 0)
+                    {
+                        arrows[(int)direction].transform.localPosition = new Vector3(0, 0, 0);
+                    }
+                }
+                else if (arrows[(int)direction].transform.parent.localPosition.y != 0)
+                {
+                    if (arrows[(int)direction].transform.parent.localPosition.y < 0)
+                    {
+                        arrows[(int)direction].transform.localPosition = new Vector3(0, 0, 0);
+                    }
+                    else if (arrows[(int)direction].transform.parent.localPosition.y > 0)
+                    {
+                        arrows[(int)direction].transform.localPosition = new Vector3(0, 0, 0);
+                    }
+                }
+            }
+            
+
+        }
+
+        public void PressDirection()
+        {
+            if(!isPressed)
+            {
+                if (Input.GetKeyDown(KeyCode.UpArrow))
+                {
+                    isPressed = true;
+                    PressButtonVisual(direction.Up);
+                    if (inputs[chainPlacement] == KeyCode.UpArrow)
+                    {
+                        inputsCorrect++;
+                        individualChain[chainPlacement].color = correct;
+                    }
+                    else
+                    {
+                        individualChain[chainPlacement].color = wrong;
+                    }
+                    chainPlacement++;
+                }
+                else if (Input.GetKeyDown(KeyCode.DownArrow))
+                {
+                    isPressed = true;
+                    PressButtonVisual(direction.Down);
+                    if (inputs[chainPlacement] == KeyCode.DownArrow)
+                    {
+                        inputsCorrect++;
+                        individualChain[chainPlacement].color = correct;
+                    }
+                    else
+                    {
+                        individualChain[chainPlacement].color = wrong;
+                    }
+                    chainPlacement++;
+                }
+                else if (Input.GetKeyDown(KeyCode.LeftArrow))
+                {
+                    isPressed = true;
+                    PressButtonVisual(direction.Left);
+                    if (inputs[chainPlacement] == KeyCode.LeftArrow)
+                    {
+                        inputsCorrect++;
+                        individualChain[chainPlacement].color = correct;
+                    }
+                    else
+                    {
+                        individualChain[chainPlacement].color = wrong;
+                    }
+                    chainPlacement++;
+                }
+                else if (Input.GetKeyDown(KeyCode.RightArrow))
+                {
+                    isPressed = true;
+                    PressButtonVisual(direction.Right);
+                    if (inputs[chainPlacement] == KeyCode.RightArrow)
+                    {
+                        inputsCorrect++;
+                        individualChain[chainPlacement].color = correct;
+                    }
+                    else
+                    {
+                        individualChain[chainPlacement].color = wrong;
+                    }
+                    chainPlacement++;
+                }
+
+                if (chainPlacement == inputs.Length)
+                {
+                    //for (int i = 0; i < individualChain.Length; i++)
+                    //{
+                    //    individualChain[i].color = Color.grey;
+                    //}
+                    //commandComplete = true;
+                    MagicActionObject.GetComponent<Animator>().SetTrigger("Closing");
+                }
+                else
+                {
+                    individualChain[chainPlacement].color = highlightFaded;
+                }
+            }
+            else
+            {
+                if (Input.GetKeyUp(KeyCode.UpArrow))
+                {
+                    isPressed = false;
+                    PressButtonVisual(direction.Up);
+                }
+                else if (Input.GetKeyUp(KeyCode.DownArrow))
+                {
+                    isPressed = false;
+                    PressButtonVisual(direction.Down);
+                }
+                else if (Input.GetKeyUp(KeyCode.LeftArrow))
+                {
+                    isPressed = false;
+                    PressButtonVisual(direction.Left);
+                }
+                else if (Input.GetKeyUp(KeyCode.RightArrow))
+                {
+                    isPressed = false;
+                    PressButtonVisual(direction.Right);
+                }
+            }
+            
+
+        }
+
+        public void MagicBarCloser()
+        {
+            isPressed = false;
+            PressButtonVisual(direction.Up);
+            PressButtonVisual(direction.Down);
+            PressButtonVisual(direction.Left);
+            PressButtonVisual(direction.Right);
+        }
+
+        public void MagicBarFinisher()
+        {
+            int damageIncrease = 0;
+
+            if (inputsCorrect <= 1)
+            {
+                damageIncrease = 0;
+            }
+            else if (inputsCorrect <= 3)
+            {
+                damageIncrease = 1;
+            }
+            else if (inputsCorrect >= 5)
+            {
+                damageIncrease = 2;
+            }
+
+            finishAction(damageIncrease, Status.Poisoned, 3, 1, 0);
+            FinishMagicCharge();
+            chainPlacement = 0;
+
+            inputsCorrect = 0;
+        }
+
+        public void FinishMagicCharge()
+        {
+            MagicActionObject.SetActive(false);
+        }
+
+        public void ShowMagicAction(Action<int, Status, int, int, int> finAction)
+        {
+            finishAction = finAction;
+            MagicActionObject.SetActive(true);
+            MagicActionObject.GetComponent<Animator>().SetTrigger("Opening");
+
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                switch (inputs[i])
+                {
+                    case KeyCode.UpArrow:
+                        individualChain[i].sprite = lightRune;
+                        break;
+                    case KeyCode.DownArrow:
+                        individualChain[i].sprite = darkRune;
+                        break;
+                    case KeyCode.RightArrow:
+                        individualChain[i].sprite = fireRune;
+                        break;
+                    case KeyCode.LeftArrow:
+                        individualChain[i].sprite = waterRune;
+                        break;
+                    
+                    case KeyCode.X:
+                        individualChain[i].sprite = windRune;
+                        break;
+                    case KeyCode.Z:
+                        individualChain[i].sprite = natureRune;
+                        break;
+                }
+            }
+
+            for (int i = 0; i < individualChain.Length; i++)
+            {
+                individualChain[i].color = fullFaded;
+            }
+
+            individualChain[0].color = highlightFaded;
+        }
+        //public void 
+
+    }
+
     public void HoldLeft()
     {
         GetComponent<Animator>().SetBool("DisplayAction", true);
         chargeBody.SetActive(true);
         child.SetActive(true);
         actionIcon.SetTrigger("Left Press");
+        isActive = true;
+    }
+
+    public void MagicInput(Action<int, Status, int, int, int> finAction)
+    {
+        magicAction.ShowMagicAction(finAction);
+    }
+
+    public void LeaveBattle(Action leave)
+    {
+        flee = leave;
+        Debug.Log("timed A");
+        GetComponent<Animator>().SetBool("DisplayAction", true);
+        child.SetActive(true);
+        actionIcon.SetTrigger("A Press");
         isActive = true;
     }
 
@@ -65,6 +384,38 @@ public class ActionCommandController : MonoBehaviour
         child = transform.GetChild(0).gameObject;
         ResetObjects();
         DeactivateActionCommand();
+
+        magicAction.Start();
+    }
+    void Update()
+    {
+        if(magicAction.MagicActionObject.activeInHierarchy)
+        {
+            magicAction.PressDirection();
+        }
+        if (!isActive || commandComplete)
+        {
+            return;
+        }
+
+        if (Input.GetAxisRaw("Vertical") < 0)
+        {
+            ResetObjects();
+        }
+
+        HoldLeftBaseLighter();
+
+        if(chainAttack)
+        {
+            TapButtonCommand();
+
+        }
+
+        if(flee !=null && Input.GetKeyDown(KeyCode.Z))
+        {
+            flee();
+        }
+
     }
 
     public void ActivateActionCommand(float xPos, float zPos)
@@ -89,26 +440,6 @@ public class ActionCommandController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        if (!isActive || commandComplete)
-        {
-            return;
-        }
-
-        if (Input.GetAxisRaw("Vertical") < 0)
-        {
-            ResetObjects();
-        }
-
-        HoldLeftBaseLighter();
-
-        if(chainAttack)
-        {
-            TapButtonCommand();
-
-        }
-    }
 
     private void TapButtonCommand()
     {
@@ -205,7 +536,7 @@ public class ActionCommandController : MonoBehaviour
     private void TriggerBattle(bool bonus)
     {
         commandComplete = true;
-        battleController.TriggerBattleAction(bonus);
+        battleController.TriggerBattleAction(Convert.ToInt32(bonus), 1f);
         DeactivateActionCommand();
     }
 

@@ -9,6 +9,9 @@ public enum Status
     Poisoned,
     Muted,
     Burned,
+    Cursed,
+    Dead,
+    Frozen,
 
     Normal
 }

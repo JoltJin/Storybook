@@ -770,6 +770,90 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Agatha Hit 1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 512
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 785287ee3545c4445b501c7e4773dae9
+      internalID: 959004365
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Agatha Jumping Forward 1
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 576
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5fa949772de2ddf44a7b9d673c672d84
+      internalID: 38376644
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Agatha Jumping Forward 2
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 576
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cea885fbd8e5b6b44951621f7da525ac
+      internalID: -566251070
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Agatha Jumping Forward 3
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 576
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 246548a90c3747f49815d2265e107337
+      internalID: 348607738
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -787,6 +871,7 @@ TextureImporter:
       Agatha Deciding 4: 9128827893819333843
       Agatha Guard 1: 8119240168466408819
       Agatha Guard 2: -3354007866328986175
+      Agatha Hit 1: 959004365
       Agatha Idle Backward 1: -636207610985712953
       Agatha Idle Backward 2: -4288679618773226387
       Agatha Idle Backward 3: 2287247726433546076
@@ -794,6 +879,9 @@ TextureImporter:
       Agatha Idle Forward 2: -7049201280211672470
       Agatha Idle Forward 3: -1952336589893828842
       Agatha Idle Forward 4: 4260363611487734092
+      Agatha Jumping Forward 1: 38376644
+      Agatha Jumping Forward 2: -566251070
+      Agatha Jumping Forward 3: 348607738
       Agatha Spell Cast 1: 6024239351750582900
       Agatha Spell Cast 2: 8702217765024528002
       Agatha Spell Cast 3: 3885745321567015098

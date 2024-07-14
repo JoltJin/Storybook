@@ -26,6 +26,7 @@ public class EnemyAIBase : MonoBehaviour
     private bool facingRight = false;
 
     private Transform target;
+
     // Start is called before the first frame update
     void Start()
     {
