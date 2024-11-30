@@ -31,19 +31,49 @@ public class PlayerController : MonoBehaviour, CharacterAnimator
 
     private bool isAirborne = false;
 
+    [SerializeField] private Material screenshotMat;
+    [SerializeField] private LayerMask basicMask;
+        RenderTexture screenshotRend;
+
+    float lastFrameY;
     // Setting up needed variables
-    private void Start()
+    private void Awake()
     {
-        if(PlayerData.party.Count == 0)
+        if (PlayerData.party.Count == 0)
         {
-            PlayerData.party.Add(new PartyStats("Agatha", 10, 1, 0));
+            PlayerData.party.Add(new PartyStats(TeammateNames.Agatha, 10, 1, 0));
+            PlayerData.party.Add(new PartyStats(TeammateNames.Faylee, 10, 1, 0));
         }
+
+        ///
+        if (screenshotMat != null)
+        {
+            screenshotMat.SetTexture("_BaseMap", screenshotRend);
+        }
+
+        screenshotMat.color = new Color(1, 1, 1, 1);
+
+        ///
+
 
 
         controller = gameObject.GetComponent<CharacterController>();
         cam = Camera.main.transform;
         dustParticles = GetComponentInChildren<ParticleSystem>().gameObject.transform;
+        StartCoroutine(PreviousYLocation());
     }
+
+    private void Start()
+    {
+        ///
+        Camera.main.targetTexture = screenshotRend;
+        Camera.main.cullingMask = basicMask;
+        Camera.main.Render();
+        Camera.main.targetTexture = null;
+
+        ///
+    }
+
 
     /// <summary>
     /// Makes Hud visible or invisible based on activity of player
@@ -53,7 +83,7 @@ public class PlayerController : MonoBehaviour, CharacterAnimator
     IEnumerator HudDisplayTimer(bool fadeOut)
     {
         //fades in the hud
-        if(!fadeOut)
+        if (!fadeOut)
         {
             hudBar.SetActive(true);
 
@@ -82,87 +112,115 @@ public class PlayerController : MonoBehaviour, CharacterAnimator
 
     void Update()
     {
-        if(isBusy)
+        //if(Input.GetButtonDown("Jump"))
+        //{
+        //    Camera.main.targetTexture = screenshotRend;
+        //    Camera.main.cullingMask = basicMask;
+        //    Camera.main.Render();
+        //    Camera.main.targetTexture = null;
+        //    return;
+        //}
+
+
+        Vector3 moveVector = Vector3.zero;
+
+        if (!isBusy && !PlayerData.inCutscene)
         {
-            return;
-        }
-        groundedPlayer = controller.isGrounded;
-        if (groundedPlayer && playerVelocity.y < 0)
-        {
-            playerVelocity.y = 0f;
-        }
+            float horizontal = Input.GetAxisRaw("Horizontal");
+            float vertical = Input.GetAxisRaw("Vertical");
+            Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
 
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
-
-        if(flipAnim != null)
-        {
-            FlipAnimation(horizontal);
-        }
-
-        if(!fader)
-        {
-            StopAllCoroutines();
+            //if (!fader)
+            //{
+            //    StopAllCoroutines();
 
 
-            if (horizontal == 0 && vertical == 0)
+            //    if (horizontal == 0 && vertical == 0)
+            //    {
+            //        if (!hudBar.activeInHierarchy)
+            //        {
+            //            fader = true;
+            //            StartCoroutine(HudDisplayTimer(false));
+            //        }
+            //    }
+            //    else
+            //    {
+            //        if (hudBar.activeInHierarchy)
+            //        {
+            //            fader = true;
+            //            StartCoroutine(HudDisplayTimer(true));
+            //        }
+            //    }
+            //}
+
+            BasicAnimations(horizontal, vertical);
+
+
+            if (direction.magnitude >= 0.01f)
             {
-                if (!hudBar.activeInHierarchy)
-                {
-                    fader = true;
-                    StartCoroutine(HudDisplayTimer(false));
-                }
+                float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
+                float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+                transform.rotation = Quaternion.Euler(0f, angle, 0f);
+                Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+                //controller.Move(playerSpeed * Time.deltaTime * moveDir.normalized);
+
+                moveVector = playerSpeed * Time.deltaTime * moveDir.normalized;
             }
-            else
+
+            //// Changes the height position of the player..
+            if (Input.GetButtonDown("Jump") && groundedPlayer)
             {
-                if (hudBar.activeInHierarchy)
-                {
-                    fader = true;
-                    StartCoroutine(HudDisplayTimer(true));
-                }
+                playerVelocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravityValue);
+
+                spriteAnim.SetTrigger("Jumping");
+                groundedPlayer = false;
+                isAirborne = true;
             }
         }
 
 
-        BasicAnimations(horizontal, vertical);
-
-
-        if (direction.magnitude >= 0.1f)
+        //Debug.Log(lastFrameY - transform.position.y);
+        if (lastFrameY > transform.position.y + .1f)
         {
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
-            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-            transform.rotation = Quaternion.Euler(0f, angle, 0f);
-            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            controller.Move(moveDir.normalized * Time.deltaTime * playerSpeed);
-        }
-
-
-        if(isAirborne && groundedPlayer || playerVelocity.y == 0 && spriteAnim.GetBool("Airborne"))
-        {
-            spriteAnim.SetTrigger("Landing");
-            isAirborne = false;
-        }
-        if(playerVelocity.y < -1.59f && !isAirborne)
-        {
-            Debug.Log(playerVelocity.y);
+            groundedPlayer = false;
             spriteAnim.SetTrigger("Airborne");
             isAirborne = true;
         }
-
-
-
-        //// Changes the height position of the player..
-        if (Input.GetButtonDown("Jump") && groundedPlayer)
+        //groundedPlayer = controller.isGrounded;
+        if (controller.isGrounded && playerVelocity.y < 0.01f)
         {
-            playerVelocity.y += Mathf.Sqrt(jumpHeight * -3.0f * gravityValue);
-
-            spriteAnim.SetTrigger("Jumping");
+            groundedPlayer = true;
+            playerVelocity.y = 0.01f;
         }
+        
+        if (isAirborne && groundedPlayer && playerVelocity.y < 0.011f /*|| playerVelocity.y == 0 && spriteAnim.GetBool("Airborne")*/)
+        {
 
+            //Debug.Log("Landing");
+            spriteAnim.SetTrigger("Landing");
+            isAirborne = false;
+        }
+        //if (playerVelocity.y < -1.59f)
+        //{
+        //    groundedPlayer = false;
+        //    Debug.Log("here");
+        //    spriteAnim.SetTrigger("Airborne");
+        //    isAirborne = true;
+        //}
 
         playerVelocity.y += gravityValue * Time.deltaTime;
-        controller.Move(playerVelocity * Time.deltaTime);
+
+        moveVector += (playerVelocity * Time.deltaTime);
+
+        controller.Move(moveVector);
+
+    }
+
+    IEnumerator PreviousYLocation()
+    {
+        lastFrameY = transform.position.y;
+        yield return new WaitForSeconds(.1f);
+        StartCoroutine(PreviousYLocation());
     }
 
 
@@ -207,7 +265,11 @@ public class PlayerController : MonoBehaviour, CharacterAnimator
 
     public void BasicAnimations(float horizontal, float vertical)
     {
-        if(!isAirborne)
+        if (flipAnim != null)
+        {
+            FlipAnimation(horizontal);
+        }
+        if (!isAirborne)
         {
             if (horizontal != 0 || vertical != 0)
             {
@@ -226,5 +288,38 @@ public class PlayerController : MonoBehaviour, CharacterAnimator
             }
         }
         
+    }
+
+    public void Emote(dialogueEmotes emote)
+    {
+        switch (emote)
+        {
+            case dialogueEmotes.Normal:
+                spriteAnim.SetBool("Angry", false);
+                spriteAnim.SetBool("Shocked", false);
+                break;
+            case dialogueEmotes.Angry:
+                spriteAnim.SetBool("Angry", true);
+                break;
+            case dialogueEmotes.Turning:
+                StartCoroutine(LookingAround());
+                break;
+            case dialogueEmotes.Shocked:
+                spriteAnim.SetBool("Shocked", false);
+                break;
+        }
+    }
+
+    IEnumerator LookingAround()
+    {
+        spriteAnim.speed = .25f;
+        //FlipAnimation(-1);
+        BasicAnimations(-1, -1);
+        BasicAnimations(0, 0);
+        yield return new WaitForSeconds(.4f);
+        BasicAnimations(1, -1);
+        BasicAnimations(0, 0);
+        yield return new WaitForSeconds(.4f);
+        spriteAnim.speed = 1;
     }
 }

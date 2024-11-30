@@ -11,6 +11,7 @@ public enum textEnder
     Agatha,
     Faylee,
     Willow,
+    Kael,
 }
 public class TextboxController : MonoBehaviour
 {
@@ -19,7 +20,8 @@ public class TextboxController : MonoBehaviour
         agathaEnder = " <sprite name=\"Agatha\"",
         fayleeEnder = " <sprite name=\"Faylee\"",
         willowEnder = " <sprite name=\"Willow\"",
-        genericEnder = " <sprite name=\"Faylee\"",
+        genericEnder = " <sprite name=\"Generic\"",
+        kaelEnder = " <sprite name=\"Kael\"",
         invisibleEnder = " color=#FFFFFF00><color=#00000000>.",
         visibleEnder = "><color=#00000000>.";
 
@@ -34,7 +36,8 @@ public class TextboxController : MonoBehaviour
     private int audioClipNum = 0;
 
     private TextWriter.TextWriterSingle textWriterSingle;
-    private string message = "";
+    private List<string> message = new List<string>();
+    private int messageNum = 0;
     private string endingMark = "";
 
     private bool isOpen;
@@ -93,16 +96,29 @@ public class TextboxController : MonoBehaviour
                 if (textWriterSingle != null && textWriterSingle.IsActive())
                 {
                     textWriterSingle.WriteAllAndDestroy();
+
                     //textWriterSingle = null;
                 }
                 else if (textWriterSingle == null)
                 {
-                    textWriterSingle = TextWriter.AddWriter_Static(text, message, 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound);
+
+                    textWriterSingle = TextWriter.AddWriter_Static(text, message[messageNum], 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound);
                 }
                 else if (!textWriterSingle.IsActive())
                 {
+                    StopAllCoroutines();
                     textWriterSingle = null;
-                    CloseTextbox();
+                    if (messageNum == message.Count - 1)
+                    {
+                        messageNum = -1;
+                        CloseTextbox();
+                    }
+                    else
+                    {
+                        messageNum++;
+                        addedEnding = false;
+                        textWriterSingle = TextWriter.AddWriter_Static(text, message[messageNum], 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound);
+                    }
                 }
             }
         }
@@ -112,7 +128,7 @@ public class TextboxController : MonoBehaviour
             StartCoroutine(EndingMarkFlash());
             addedEnding = true;
         }
-
+        /*
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             StopAllCoroutines();
@@ -212,13 +228,15 @@ public class TextboxController : MonoBehaviour
             textWriterSingle = TextWriter.AddWriter_Static(text, message, 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound);
             StartTalkingSound();
         }
+
+        */
     }
 
     IEnumerator EndingMarkFlash()
     {
-        text.text = message + endingMark + visibleEnder;
+        text.text = message[messageNum] + endingMark + visibleEnder;
         yield return new WaitForSeconds(.5f);
-        text.text = message + endingMark + invisibleEnder;
+        text.text = message[messageNum] + endingMark + invisibleEnder;
         yield return new WaitForSeconds(.5f);
         StartCoroutine(EndingMarkFlash());
     }
@@ -250,9 +268,22 @@ public class TextboxController : MonoBehaviour
         isOpen = true;
     }
 
-    public void SetText(string txt, textEnder ender)
+    public bool isFinished()
+    {
+        if(messageNum == -1)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    public void SetText(List<string> txt, textEnder ender)
     {
         message = txt;
+        
+        messageNum = 0;
         addedEnding = false;
         string finisher = alignment;
 
@@ -264,10 +295,13 @@ public class TextboxController : MonoBehaviour
                 case textEnder.Faylee:
                 finisher += fayleeEnder;
                 break;
-                case textEnder.Willow:
+            case textEnder.Willow:
                 finisher += willowEnder;
                 break;
-                case textEnder.Generic:
+            case textEnder.Kael:
+                finisher += kaelEnder;
+                break;
+            case textEnder.Generic:
                 finisher += genericEnder;
                 //finisher = "";
                 break;
@@ -276,7 +310,7 @@ public class TextboxController : MonoBehaviour
         //Hi there <sprite name="Agatha" color=#FFFFFF00> set it to transparent
         endingMark =  finisher;
 
-        textWriterSingle = TextWriter.AddWriter_Static(text, message, 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound);
+        textWriterSingle = TextWriter.AddWriter_Static(text, message[messageNum], 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound);
     }
     
     private void CloseTextbox()

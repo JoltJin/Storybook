@@ -47,9 +47,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minAnimationTime: 0.75
-  maxAnimationTime: 1
+  maxAnimationTime: 1.25
   minWobbleForward: 10
-  maxWobbleForward: 15
+  maxWobbleForward: 25
   reverse: 0
 --- !u!208 &-8868940792999284954
 NavMeshObstacle:
@@ -206,6 +206,7 @@ MonoBehaviour:
   freezeYAxis: 0
   freezeZAxis: 1
   isFlipped: 0
+  applyBillboard: 1
 --- !u!114 &8439700039997952407
 MonoBehaviour:
   m_ObjectHideFlags: 0

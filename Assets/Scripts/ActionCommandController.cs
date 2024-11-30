@@ -49,6 +49,10 @@ public class ActionCommandController : MonoBehaviour
 
         [SerializeField] private GameObject[] arrows = new GameObject[4];
 
+        private int damageMod = 0;
+        private int durationMod = 0;
+        private int dotMod = 0;
+        private int neutralizeMod = 0;
         //[SerializeField] private
         public GameObject MagicActionObject;
         [SerializeField] private GameObject chainBar;
@@ -278,7 +282,7 @@ public class ActionCommandController : MonoBehaviour
             {
                 damageIncrease = 2;
             }
-
+            //damage, status, turns, dot amount, neutralize amount
             finishAction(damageIncrease, Status.Poisoned, 3, 1, 0);
             FinishMagicCharge();
             chainPlacement = 0;
@@ -291,8 +295,12 @@ public class ActionCommandController : MonoBehaviour
             MagicActionObject.SetActive(false);
         }
 
-        public void ShowMagicAction(Action<int, Status, int, int, int> finAction)
+        public void ShowMagicAction(Action<int, Status, int, int, int> finAction, int damageMod, int durationMod, int dotMod,int neutralizeMod)
         {
+            this.damageMod = damageMod;
+            this.durationMod = durationMod;
+            this.dotMod = dotMod;
+            this.neutralizeMod = neutralizeMod;
             finishAction = finAction;
             MagicActionObject.SetActive(true);
             MagicActionObject.GetComponent<Animator>().SetTrigger("Opening");
@@ -343,9 +351,29 @@ public class ActionCommandController : MonoBehaviour
         isActive = true;
     }
 
-    public void MagicInput(Action<int, Status, int, int, int> finAction)
+    public void MagicInput(Action<int, Status, int, int, int> finAction, TeammateNames charName)
     {
-        magicAction.ShowMagicAction(finAction);
+        int damageMod = 0;
+        int durationMod = 0;
+        int dotMod = 0;
+        int neutralizeMod = 0;
+        for (int i = 0; i < PlayerData.party.Count; i++)
+        {
+            if (PlayerData.party[i].charName == charName)
+            {
+                for (int j = 0; j < PlayerData.party[i].skillLevels.Count; j++)
+                {
+                    if (PlayerData.party[i].skillLevels[j].Type == SkillType.Skill1)
+                    {
+                        damageMod = PlayerData.party[i].skillLevels[j].Level;
+                        break;
+                    }
+                }
+            }
+        }
+        magicAction.ShowMagicAction(finAction, damageMod, durationMod, dotMod, neutralizeMod);
+
+        Debug.Log(charName + " is casting");
     }
 
     public void LeaveBattle(Action leave)

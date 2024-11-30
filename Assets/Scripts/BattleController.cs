@@ -247,7 +247,7 @@ public class BattleController : MonoBehaviour
 
         if (PlayerData.party.Count == 0)
         {
-            PlayerData.party.Add(new PartyStats("Agatha", 10, 1, 0));
+            PlayerData.party.Add(new PartyStats(TeammateNames.Agatha, 10, 1, 0));
 
         }
 
@@ -948,7 +948,7 @@ public class BattleController : MonoBehaviour
 
             if (currentTurn == CurrentTurn.Main)
             {
-                actionCommand.MagicInput(TriggerBattleAction);
+                actionCommand.MagicInput(TriggerBattleAction, TeammateNames.Agatha);
             }
             else
             {
@@ -1540,7 +1540,7 @@ public class BattleController : MonoBehaviour
     //for player characters
     public static void AddParticipant(PartyStats partyMember, CurrentTurn role, int enchantmentAttack, int enchantmentDefense)
     {
-        participants.Add(new BattleParticipant(partyMember.charName, role, partyMember.maxHealth, partyMember.currentHealth, partyMember.baseDamage + enchantmentAttack, partyMember.defense + enchantmentDefense));
+        participants.Add(new BattleParticipant(partyMember.charName.ToString(), role, partyMember.maxHealth, partyMember.currentHealth, partyMember.baseDamage + enchantmentAttack, partyMember.defense + enchantmentDefense));
         //participants.Add(new BattleParticipant(name, maxHp, maxHp, atk, def));
     }
     

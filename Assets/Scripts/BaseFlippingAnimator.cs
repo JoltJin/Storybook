@@ -60,6 +60,10 @@ public class BaseFlippingAnimator : MonoBehaviour
 
     IEnumerator RotateObject()
     {
+        if(GetComponentInChildren<SpriteBillboard>())
+        {
+            GetComponentInChildren<SpriteBillboard>().applyBillboard = false;
+        }
         //transform.rotation = Quaternion.Euler(transform.rotation.x + 91, transform.rotation.y, transform.rotation.z);
 
         Quaternion target = Quaternion.Euler(origin);
@@ -90,6 +94,11 @@ public class BaseFlippingAnimator : MonoBehaviour
             transform.GetChild(0).rotation = Quaternion.RotateTowards(transform.GetChild(0).rotation, target, Time.deltaTime * duration*1.5f);
 
             yield return new WaitForEndOfFrame();
+        }
+
+        if (GetComponentInChildren<SpriteBillboard>())
+        {
+            GetComponentInChildren<SpriteBillboard>().applyBillboard = true;
         }
     }
 }

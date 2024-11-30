@@ -42,11 +42,11 @@ public class BattleStartTrigger : MonoBehaviour
             //Camera.main.Render();
             //Camera.main.targetTexture = null;
 
-            BattleController.AddParticipant(PlayerData.party[0].charName, BattleController.CurrentTurn.Main, PlayerData.party[0].maxHealth, PlayerData.party[0].currentHealth, PlayerData.party[0].baseDamage, PlayerData.party[0].defense);
+            BattleController.AddParticipant(PlayerData.party[0].charName.ToString(), BattleController.CurrentTurn.Main, PlayerData.party[0].maxHealth, PlayerData.party[0].currentHealth, PlayerData.party[0].baseDamage, PlayerData.party[0].defense);
 
             if(PlayerData.party.Count > 1 )
             {
-                BattleController.AddParticipant(PlayerData.party[1].charName, BattleController.CurrentTurn.Partner, PlayerData.party[1].maxHealth, PlayerData.party[1].currentHealth, PlayerData.party[1].baseDamage, PlayerData.party[1].defense);
+                BattleController.AddParticipant(PlayerData.party[1].charName.ToString(), BattleController.CurrentTurn.Partner, PlayerData.party[1].maxHealth, PlayerData.party[1].currentHealth, PlayerData.party[1].baseDamage, PlayerData.party[1].defense);
             }
 
             int poolNum = 0;

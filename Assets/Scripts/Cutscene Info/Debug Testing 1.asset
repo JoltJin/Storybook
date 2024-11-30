@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a192183b8a5f124a93a04e98d1d45ac, type: 3}
+  m_Name: Debug Testing 1
+  m_EditorClassIdentifier: 
+  slot: 0
+  character: 0
+  locations:
+  - character: 0
+    location: {x: 16.53, y: 0, z: -16.563}
+    speedToLocation: 2
+  - character: 0
+    location: {x: 16.06, y: 0, z: -21.25}
+    speedToLocation: 2

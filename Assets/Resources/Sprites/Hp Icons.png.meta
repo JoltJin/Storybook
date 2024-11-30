@@ -54,7 +54,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 64
@@ -135,12 +135,12 @@ TextureImporter:
       name: Hp Icons_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 96
         y: 0
         width: 32
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -156,12 +156,12 @@ TextureImporter:
       name: Hp Icons_1
       rect:
         serializedVersion: 2
-        x: 32
+        x: 144
         y: 0
         width: 32
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -177,12 +177,12 @@ TextureImporter:
       name: Hp Icons_2
       rect:
         serializedVersion: 2
-        x: 64
+        x: 192
         y: 0
         width: 32
         height: 32
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -190,6 +190,69 @@ TextureImporter:
       bones: []
       spriteID: d7fb94302ad0f94c0800000000000000
       internalID: -4278686131487654019
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: HP ICONS Test
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 3, y: 2, z: 3, w: 26}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bc81adbb1bcb9cb42b8657d9817a49fa
+      internalID: 200426204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Hp Icons_3
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 0
+        width: 32
+        height: 32
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 3, y: 2, z: 3, w: 25}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 19ae3e59fa906f84fabb5e67f1909fe9
+      internalID: 1531681214
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Skill Tree Box
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 0
+        width: 32
+        height: 9
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 3, y: 2, z: 3, w: 2}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d39c4e1c268aadf4aa5ebde6e3df5dba
+      internalID: -742610641
       vertices: []
       indices: 
       edges: []
@@ -205,9 +268,12 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
+      HP ICONS Test: 200426204
       Hp Icons_0: -6808914406883253274
       Hp Icons_1: 5874257967939941825
       Hp Icons_2: -4278686131487654019
+      Hp Icons_3: 1531681214
+      Skill Tree Box: -742610641
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

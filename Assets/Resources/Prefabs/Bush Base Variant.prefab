@@ -14,7 +14,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 145842398119890830, guid: 75258cab127968546a13d0d6c70660ae, type: 3}
       propertyPath: maxWobbleForward
-      value: 10
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 145842398119890830, guid: 75258cab127968546a13d0d6c70660ae, type: 3}
       propertyPath: minAnimationTime

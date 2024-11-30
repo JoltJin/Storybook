@@ -9,5 +9,14 @@ public interface CharacterAnimator
 
     void FlipAnimation(float direction);
     void BasicAnimations(float horizontal, float vertical);
-    
+
+    //void LookAround()
+    //{
+    //    FlipAnimation(-1);
+    //    FlipAnimation(1);
+    //    FlipAnimation(-1);
+    //    FlipAnimation(1);
+    //}
+
+    void Emote(dialogueEmotes emote);
 }

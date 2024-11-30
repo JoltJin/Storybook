@@ -194,6 +194,48 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: textbox-stamp_Kael
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 0
+        width: 16
+        height: 16
+      alignment: 6
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ae175126df8ed1a44b46fd1662ecda44
+      internalID: -1461804067
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: textbox-stamp_Generic
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 16
+        height: 16
+      alignment: 6
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 01d43477d3b37744e8a0d6df299269d1
+      internalID: -828551095
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -208,6 +250,8 @@ TextureImporter:
       textbox-stamp-Agatha: -5114889129474691257
       textbox-stamp-Faylee: 4725938807908306104
       textbox-stamp-Willow: 5846006828148596840
+      textbox-stamp_Generic: -828551095
+      textbox-stamp_Kael: -1461804067
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

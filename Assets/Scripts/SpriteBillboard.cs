@@ -8,9 +8,15 @@ public class SpriteBillboard : MonoBehaviour
     [SerializeField] bool freezeYAxis = true;
     [SerializeField] bool freezeZAxis = true;
     [SerializeField] bool isFlipped = false;
+
+    public bool applyBillboard = true;
     // Update is called once per frame
     void LateUpdate()
     {
+        if (!applyBillboard)
+        {
+            return;
+        }
         if (!freezeXAxis && !freezeYAxis && !freezeZAxis)
         {
             return;

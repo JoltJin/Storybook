@@ -14,10 +14,10 @@ public class BookTransitionController : MonoBehaviour
     [SerializeField] private Transform battleLoadLocation;
 
 
-    [SerializeField] private LayerMask basicMask;
     [SerializeField] private LayerMask screenshotMask;
-
+    [SerializeField] private LayerMask basicMask;
     private RenderTexture screenshotRend;
+
     public static BookTransitionController Instance;
 
     private string sceneToLoad;
