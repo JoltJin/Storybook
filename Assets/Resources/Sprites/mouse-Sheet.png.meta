@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e66d6489ddf2200448523da41d547a5e
+guid: c12ed1e973ca3434caa1aff4ae9b7c15
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -45,11 +45,11 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 0
-  alignment: 6
-  spritePivot: {x: 0, y: 0}
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 64
-  spriteBorder: {x: 32, y: 25, z: 23, w: 21}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -65,7 +65,7 @@ TextureImporter:
   ignorePngGamma: 0
   applyGammaDecoding: 0
   swizzle: 50462976
-  cookieLightType: 1
+  cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
@@ -85,7 +85,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -98,7 +98,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -111,7 +111,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -123,85 +123,85 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Text Box Main
+      name: MouseMan Idle 1
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 62
-        height: 64
-      alignment: 6
-      pivot: {x: 0, y: 0}
-      border: {x: 23, y: 25, z: 21, w: 21}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 5757d0a859c150543bcbdcadaf70bd9c
-      internalID: -112600959
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Text Box Talking Right Of Box
-      rect:
-        serializedVersion: 2
-        x: 64
-        y: 32
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        x: 3
+        y: 3
+        width: 55
+        height: 56
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 32b8b38458db93b46bd7b85743b090ef
-      internalID: -400357560
+      spriteID: 2ebc9b6e3c8d318418bd8621750c947f
+      internalID: 119906115
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Text Box Talking Left Of Box
+      name: MouseMan Idle 2
       rect:
         serializedVersion: 2
-        x: 64
-        y: 0
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        x: 67
+        y: 3
+        width: 55
+        height: 57
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: da51385e855f7794f99eecb68fa39f33
-      internalID: -1001160414
+      spriteID: 48362c414e3c3be47bd5957e6e029d97
+      internalID: 1139932957
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Text Box Indicator
+      name: MouseMan Idle 3
       rect:
         serializedVersion: 2
-        x: 82
-        y: 16
-        width: 42
-        height: 48
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        x: 131
+        y: 3
+        width: 55
+        height: 57
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4a51b661965a48742af322ef400601da
-      internalID: 477359739
+      spriteID: bef6a3edc27d93f4a8fcf5c30232bd49
+      internalID: 720722473
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MouseMan Idle 4
+      rect:
+        serializedVersion: 2
+        x: 195
+        y: 3
+        width: 55
+        height: 56
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 61d13e6c30c335140bff9540ebca202b
+      internalID: 1851540875
       vertices: []
       indices: 
       edges: []
@@ -217,10 +217,10 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      Text Box Indicator: 477359739
-      Text Box Main: -112600959
-      Text Box Talking Left Of Box: -1001160414
-      Text Box Talking Right Of Box: -400357560
+      MouseMan Idle 1: 119906115
+      MouseMan Idle 2: 1139932957
+      MouseMan Idle 3: 720722473
+      MouseMan Idle 4: 1851540875
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

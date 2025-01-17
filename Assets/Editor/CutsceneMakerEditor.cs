@@ -16,6 +16,17 @@ public class CutsceneMakerEditor : Editor
         CutsceneController controller = (CutsceneController)target;
 
         var controllerData = serializedObject.FindProperty("cutsceneData");
+
+        if(controllerData.arraySize < 1)
+        {
+            if (GUILayout.Button(new GUIContent("Add", "Add Copy Of Action Set"), GUILayout.Width(40)))
+            {
+                controllerData.InsertArrayElementAtIndex(0);
+                serializedObject.ApplyModifiedProperties();
+            }
+            return;
+        }
+
         for (int i = 0; i < controllerData.arraySize; i++)
         {
             bool skip1 = false;
@@ -172,7 +183,7 @@ public class CutsceneMakerEditor : Editor
                                     {
                                         EditorGUILayout.BeginVertical("box");
 
-                                        var locationsInnerData = cutsceneLocationClass.FindPropertyRelative("locations");
+                                        var locationsInnerData = cutsceneLocationClass.FindPropertyRelative("movementCombo");
                                         for (int m = 0; m < locationsInnerData.arraySize; m++)
                                         {
                                             skip3 = false;
@@ -220,7 +231,107 @@ public class CutsceneMakerEditor : Editor
                                 }
                             }
                             break;
-                        case CutsceneType.Both:
+
+                        case CutsceneType.SceneChange:
+                            var sceneChangeData = controllerType.FindPropertyRelative("cutsceneSceneChange");
+                            for (int j = 0; j < sceneChangeData.arraySize; j++)
+                            {
+                                skip2 = false;
+                                var sceneChangeClass = sceneChangeData.GetArrayElementAtIndex(j);
+                                EditorGUILayout.BeginHorizontal();
+                                sceneChangeClass.FindPropertyRelative("isUnfolded").boolValue = EditorGUILayout.Foldout(sceneChangeClass.FindPropertyRelative("isUnfolded").boolValue, "Scene Change Set " + (j + 1));
+                                GUILayout.FlexibleSpace();
+                                if (GUILayout.Button(new GUIContent("Add", "Add Copy Of Scene Change Set"), GUILayout.Width(40)))
+                                {
+                                    sceneChangeData.InsertArrayElementAtIndex(j);
+                                    serializedObject.ApplyModifiedProperties();
+                                }
+                                if (GUILayout.Button(new GUIContent("Remove", "Remove Current Scene Change Set"), GUILayout.Width(60)) && controllerData.arraySize > 0)
+                                {
+                                    sceneChangeData.DeleteArrayElementAtIndex(j);
+                                    serializedObject.ApplyModifiedProperties();
+                                    skip2 = true;
+                                    j--;
+                                }
+                                EditorGUILayout.EndHorizontal();
+
+                                if (!skip2)
+                                {
+                                    if (sceneChangeClass.FindPropertyRelative("isUnfolded").boolValue)
+                                    {
+                                        EditorGUILayout.BeginVertical("box");
+
+                                        EditorGUILayout.BeginHorizontal();
+                                        EditorGUILayout.LabelField("Is This A Battle?", GUILayout.Width(90));
+                                        EditorGUILayout.PropertyField(sceneChangeClass.FindPropertyRelative("isBattleScene"), GUIContent.none);
+                                        EditorGUILayout.EndHorizontal();
+                                        if (sceneChangeClass.FindPropertyRelative("isBattleScene").boolValue)
+                                        {
+                                            EditorGUILayout.PropertyField(sceneChangeClass.FindPropertyRelative("enemyPool"));
+                                        }
+
+                                        EditorGUILayout.PropertyField(sceneChangeClass.FindPropertyRelative("SceneToLoad"));
+                                                /*
+                                        
+                                        var sceneChangeInnerData = sceneChangeClass.FindPropertyRelative("dialogue");
+                                        for (int m = 0; m < sceneChangeInnerData.arraySize; m++)
+                                        {
+                                            skip3 = false;
+                                            //var cutsceneDialoguePairing = sceneChangeInnerData.GetArrayElementAtIndex(m);
+
+                                            //if (sceneChangeInnerData.GetArrayElementAtIndex(m).FindPropertyRelative("isUnfolded").boolValue)
+                                            //{
+
+                                            //}
+
+                                                EditorGUILayout.BeginHorizontal();
+                                                cutsceneDialoguePairing.FindPropertyRelative("isUnfolded").boolValue = EditorGUILayout.Foldout(cutsceneDialoguePairing.FindPropertyRelative("isUnfolded").boolValue, "Cutscene Character/Text Set " + (m + 1));
+                                                GUILayout.FlexibleSpace();
+                                                if (GUILayout.Button(new GUIContent("Add", "Add Copy Of Character Dialogue Set"), GUILayout.Width(40)))
+                                                {
+                                                    sceneChangeInnerData.InsertArrayElementAtIndex(m);
+                                                    serializedObject.ApplyModifiedProperties();
+                                                }
+                                                if (GUILayout.Button(new GUIContent("Remove", "Remove Current Character Dialogue Set"), GUILayout.Width(60)) && sceneChangeInnerData.arraySize > 0)
+                                                {
+                                                    sceneChangeInnerData.DeleteArrayElementAtIndex(m);
+                                                    serializedObject.ApplyModifiedProperties();
+                                                    skip3 = true;
+                                                    m--;
+                                                }
+
+                                                EditorGUILayout.EndHorizontal();
+
+                                                if (!skip3)
+                                                {
+
+                                                    if (cutsceneDialoguePairing.FindPropertyRelative("isUnfolded").boolValue)
+                                                    {
+                                                        EditorGUILayout.BeginVertical("box");
+                                                        EditorGUILayout.BeginHorizontal();
+
+                                                        EditorGUILayout.LabelField("Character", GUILayout.Width(80));
+                                                        EditorGUILayout.PropertyField(cutsceneDialoguePairing.FindPropertyRelative("character"), GUIContent.none);
+                                                        EditorGUILayout.LabelField("Ending Mark", GUILayout.Width(80));
+                                                        EditorGUILayout.PropertyField(cutsceneDialoguePairing.FindPropertyRelative("ender"), GUIContent.none);
+                                                        EditorGUILayout.EndHorizontal();
+
+
+                                                        EditorGUILayout.BeginHorizontal();
+                                                        EditorGUILayout.PropertyField(cutsceneDialoguePairing.FindPropertyRelative("text"));
+                                                        EditorGUILayout.EndHorizontal();
+                                                        EditorGUILayout.EndVertical();
+                                                    }
+                                                }
+                                            }
+                                                */
+                                        EditorGUILayout.EndVertical();
+                                    }
+                                }
+                            }
+                            break;
+
+                        case CutsceneType.Both_Unused:
 
                             break;
                     }
@@ -272,7 +383,7 @@ public class CutsceneMakerEditor : Editor
                                 else if (i > 0 && (CutsceneType)controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneType").enumValueIndex == CutsceneType.Walking)
                                 {
                                     Handles.color = Color.red;
-                                    Handles.DrawAAPolyLine(5f, controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").arraySize - 1).FindPropertyRelative("locations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").arraySize - 1).FindPropertyRelative("locations").arraySize - 1).FindPropertyRelative("location").vector3Value, dialogueData.GetArrayElementAtIndex(j).FindPropertyRelative("lookAtPos").vector3Value);
+                                    Handles.DrawAAPolyLine(5f, controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").arraySize - 1).FindPropertyRelative("movementCombo").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").arraySize - 1).FindPropertyRelative("movementCombo").arraySize - 1).FindPropertyRelative("location").vector3Value, dialogueData.GetArrayElementAtIndex(j).FindPropertyRelative("lookAtPos").vector3Value);
                                 }
                             }
                             else if (j > 0)
@@ -306,7 +417,7 @@ public class CutsceneMakerEditor : Editor
 
                         if (cutsceneLocationClass.FindPropertyRelative("isUnfolded").boolValue)
                         {
-                            var locationsInnerData = cutsceneLocationClass.FindPropertyRelative("locations");
+                            var locationsInnerData = cutsceneLocationClass.FindPropertyRelative("movementCombo");
                             Vector3[] newWalkingDestination = new Vector3[locationsInnerData.arraySize];
                             for (int m = 0; m < locationsInnerData.arraySize; m++)
                             {
@@ -318,7 +429,7 @@ public class CutsceneMakerEditor : Editor
                                         if (j > 0)
                                         {
                                             Handles.color = Color.yellow;
-                                            Handles.DrawAAPolyLine(5f, locationData.GetArrayElementAtIndex(j - 1).FindPropertyRelative("locations").GetArrayElementAtIndex(locationData.GetArrayElementAtIndex(j - 1).FindPropertyRelative("locations").arraySize - 1).FindPropertyRelative("location").vector3Value, locationsInnerData.GetArrayElementAtIndex(m).FindPropertyRelative("location").vector3Value);
+                                            Handles.DrawAAPolyLine(5f, locationData.GetArrayElementAtIndex(j - 1).FindPropertyRelative("movementCombo").GetArrayElementAtIndex(locationData.GetArrayElementAtIndex(j - 1).FindPropertyRelative("movementCombo").arraySize - 1).FindPropertyRelative("location").vector3Value, locationsInnerData.GetArrayElementAtIndex(m).FindPropertyRelative("location").vector3Value);
                                         }
                                         else if (j == 0 && i > 0 && (CutsceneType)controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneType").enumValueIndex == CutsceneType.Talking)
                                         {
@@ -329,7 +440,7 @@ public class CutsceneMakerEditor : Editor
                                         else if (j == 0 && i > 0 && (CutsceneType)controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneType").enumValueIndex == CutsceneType.Walking)
                                         {
                                             Handles.color = Color.yellow;
-                                            Handles.DrawAAPolyLine(5f, controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").arraySize - 1).FindPropertyRelative("locations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").arraySize - 1).FindPropertyRelative("locations").arraySize - 1).FindPropertyRelative("location").vector3Value, locationsInnerData.GetArrayElementAtIndex(m).FindPropertyRelative("location").vector3Value);
+                                            Handles.DrawAAPolyLine(5f, controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").arraySize - 1).FindPropertyRelative("locations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").arraySize - 1).FindPropertyRelative("movementCombo").arraySize - 1).FindPropertyRelative("location").vector3Value, locationsInnerData.GetArrayElementAtIndex(m).FindPropertyRelative("location").vector3Value);
                                         }
                                     }
                                     else if (m > 0)
@@ -354,7 +465,53 @@ public class CutsceneMakerEditor : Editor
                         }
                     }
                     break;
-                case CutsceneType.Both:
+                case CutsceneType.SceneChange:
+
+                    GUIStyle sceneChangeStyle = new GUIStyle();
+                    sceneChangeStyle.normal.textColor = Color.black;
+                    sceneChangeStyle.normal.background = Texture2D.grayTexture;
+                    var sceneChangeData = controllerType.FindPropertyRelative("cutsceneSceneChange");
+                    //Vector3[] newFaceDirection = new Vector3[sceneChangeData.arraySize];
+                    for (int j = 0; j < sceneChangeData.arraySize; j++)
+                    {
+                        var cutsceneSceneChangeClass = sceneChangeData.GetArrayElementAtIndex(j);
+
+                        //if (cutsceneSceneChangeClass.FindPropertyRelative("isUnfolded").boolValue && controllerType.FindPropertyRelative("isUnfolded").boolValue)
+                        //{
+                        //    if (j == 0)
+                        //    {
+                        //        if (i > 0 && (CutsceneType)controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneType").enumValueIndex == CutsceneType.Talking)
+                        //        {
+                        //            Handles.color = Color.yellow;
+                        //            Handles.DrawAAPolyLine(5f, controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneDialogue").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneDialogue").arraySize - 1).FindPropertyRelative("lookAtPos").vector3Value, sceneChangeData.GetArrayElementAtIndex(j).FindPropertyRelative("lookAtPos").vector3Value);
+                        //        }
+                        //        else if (i > 0 && (CutsceneType)controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneType").enumValueIndex == CutsceneType.Walking)
+                        //        {
+                        //            Handles.color = Color.red;
+                        //            Handles.DrawAAPolyLine(5f, controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").arraySize - 1).FindPropertyRelative("locations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").GetArrayElementAtIndex(controllerData.GetArrayElementAtIndex(i - 1).FindPropertyRelative("cutsceneLocations").arraySize - 1).FindPropertyRelative("locations").arraySize - 1).FindPropertyRelative("location").vector3Value, sceneChangeData.GetArrayElementAtIndex(j).FindPropertyRelative("lookAtPos").vector3Value);
+                        //        }
+                        //    }
+                        //    else if (j > 0)
+                        //    {
+                        //        Handles.color = Color.green;
+                        //        Handles.DrawAAPolyLine(5f, sceneChangeData.GetArrayElementAtIndex(j - 1).FindPropertyRelative("lookAtPos").vector3Value, sceneChangeData.GetArrayElementAtIndex(j).FindPropertyRelative("lookAtPos").vector3Value);
+                        //    }
+
+                        //    EditorGUI.BeginChangeCheck();
+                        //    newFaceDirection[j] = Handles.PositionHandle(cutsceneSceneChangeClass.FindPropertyRelative("lookAtPos").vector3Value, Quaternion.identity);
+
+                        //    Handles.Label(newFaceDirection[j], "Act " + (i + 1) + " Dialogue Facing Direction " + (j + 1), sceneChangeStyle);
+                        //    if (EditorGUI.EndChangeCheck())
+                        //    {
+                        //        Undo.RecordObject(controller, "Change Look At Position");
+                        //        cutsceneSceneChangeClass.FindPropertyRelative("lookAtPos").vector3Value = newFaceDirection[j];
+                        //        serializedObject.ApplyModifiedProperties();
+                        //    }
+                        //}
+                    }
+
+                    break;
+                case CutsceneType.Both_Unused:
 
                     break;
             }

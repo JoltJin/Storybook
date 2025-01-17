@@ -15,27 +15,28 @@ public class TextWriter : MonoBehaviour
         instance = this;
     }
 
-    public static TextWriterSingle AddWriter_Static(TextMeshPro textBox, string textToWrite, float timePerCharacter, bool invisibleCharacters, bool removeWriterFirst, Action onComplete, Action onFinishSentence, Action onStartSentence, Action onStopTalkingSound)
+    public static TextWriterSingle AddWriter_Static(TextMeshProUGUI textBox, string textToWrite, float timePerCharacter, bool invisibleCharacters, bool removeWriterFirst, Action onComplete, Action onFinishSentence, Action onStartSentence, Action onStopTalkingSound, Action<int> CheckVisibleLineCount)
     {
         if(removeWriterFirst)
         {
             instance.RemoveWriter(textBox);
         }
-        return instance.AddWriter(textBox, textToWrite, timePerCharacter, invisibleCharacters, onComplete, onFinishSentence, onStartSentence, onStopTalkingSound);
+        return instance.AddWriter(textBox, textToWrite, timePerCharacter, invisibleCharacters, onComplete, onFinishSentence, onStartSentence, onStopTalkingSound, CheckVisibleLineCount);
     }
-    private TextWriterSingle AddWriter(TextMeshPro textBox, string textToWrite, float timePerCharacter, bool invisibleCharacters, Action onComplete, Action onFinishSentence, Action onStartSentence, Action onStopTalkingSound)
+    private TextWriterSingle AddWriter(TextMeshProUGUI textBox, string textToWrite, float timePerCharacter, bool invisibleCharacters, Action onComplete, Action onFinishSentence, Action onStartSentence, Action onStopTalkingSound, Action<int> CheckVisibleLineCount)
     {
-        TextWriterSingle textWriterSingle = new TextWriterSingle(textBox, textToWrite, timePerCharacter, invisibleCharacters, onComplete, onFinishSentence, onStartSentence, onStopTalkingSound);
+        TextWriterSingle textWriterSingle = new TextWriterSingle(textBox, textToWrite, timePerCharacter, invisibleCharacters, onComplete, onFinishSentence, onStartSentence, onStopTalkingSound, CheckVisibleLineCount);
         textWriterSingleList.Add(textWriterSingle);
         return textWriterSingle;
     }
-    private static void RemoveWriter_Static(TextMeshPro textBox)
+    private static void RemoveWriter_Static(TextMeshProUGUI textBox)
     {
         instance.RemoveWriter(textBox);
     }
 
-    private void RemoveWriter(TextMeshPro textBox)
+    private void RemoveWriter(TextMeshProUGUI textBox)
     {
+
         for (int i = 0; i < textWriterSingleList.Count; i++)
         {
             if (textWriterSingleList[i].GetTextMesh() == textBox)
@@ -61,7 +62,7 @@ public class TextWriter : MonoBehaviour
     }
     public class TextWriterSingle
     {
-        private TextMeshPro textBox;
+        private TextMeshProUGUI textBox;
         private string textToWrite;
         private int characterIndex;
         private float timePerCharacter;
@@ -71,9 +72,10 @@ public class TextWriter : MonoBehaviour
         private Action onFinishSentence;
         private Action onStartSentence;
         private Action onTextboxFinished;
+        private Action<int> CheckVisibleLineCount;
         private bool currentlyStoppedSounds = false;
 
-        public TextWriterSingle(TextMeshPro textBox, string textToWrite, float timePerCharacter, bool invisibleCharacters, Action onStopTalkingSound, Action onFinishSentence, Action onStartSentence, Action onTextboxFinished)
+        public TextWriterSingle(TextMeshProUGUI textBox, string textToWrite, float timePerCharacter, bool invisibleCharacters, Action onStopTalkingSound, Action onFinishSentence, Action onStartSentence, Action onTextboxFinished, Action<int> CheckVisibleLineCount)
         {
             this.textBox = textBox;
             this.textToWrite = textToWrite;
@@ -83,8 +85,8 @@ public class TextWriter : MonoBehaviour
             this.onFinishSentence = onFinishSentence;
             this.onStartSentence = onStartSentence;
             this.onTextboxFinished = onTextboxFinished;
+            this.CheckVisibleLineCount = CheckVisibleLineCount;
             characterIndex = 0;
-
         }
         public bool Update()
         {
@@ -95,6 +97,10 @@ public class TextWriter : MonoBehaviour
                 timer += timePerCharacter;
 
                 string text = textToWrite.Substring(0, characterIndex);
+
+                textBox.text = text;
+                textBox.ForceMeshUpdate();
+                int lineCount = textBox.textInfo.lineCount;
 
                 if (invisibleCharacters)
                 {
@@ -126,9 +132,9 @@ public class TextWriter : MonoBehaviour
                     }
                 }
 
-                
 
                 textBox.text = text;
+                CheckVisibleLineCount(lineCount);
 
                 if (characterIndex >= textToWrite.Length)
                 {
@@ -140,7 +146,7 @@ public class TextWriter : MonoBehaviour
             return false;
         }
 
-        public TextMeshPro GetTextMesh() 
+        public TextMeshProUGUI GetTextMesh() 
         { 
             return textBox; 
         }

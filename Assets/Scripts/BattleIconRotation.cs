@@ -299,9 +299,13 @@ public class BattleIconRotation : MonoBehaviour
     IEnumerator MoveIcons(int sortingIcon)
     {
         CanSelectOption = false;
-
-        for (int i = 0; i < positions.Length; i++)
+        Vector2[] origPos = new Vector2[icons.Length], 
+                  OrigScale = new Vector2[icons.Length];
+        //originally positions
+        for (int i = 0; i < icons.Length; i++)
         {
+            origPos[i] = icons[i].transform.localPosition;
+            OrigScale[i] = icons[i].transform.localScale;
             if (positions[i] == mainSlotPos)
             {
                 foreach (SpriteRenderer spriteColor in icons[i].GetComponentsInChildren<SpriteRenderer>())
@@ -320,13 +324,14 @@ public class BattleIconRotation : MonoBehaviour
         
         yield return new WaitForSeconds(0.01f);
         float time = 0;
-        float duration = 1;
-        while (time < duration / 2)
-        {
-            for (int i = 0; i < positions.Length; i++)
-            {
-                icons[i].transform.localPosition = Vector3.Lerp(icons[i].transform.localPosition, positions[i], time / duration);
-                icons[i].transform.localScale = Vector3.Lerp(icons[i].transform.localScale, currentScale[i], time / duration);
+        float duration = .25f;
+
+        while (time < duration)
+        {//was positions for some reason
+            for (int i = 0; i < icons.Length; i++)
+            {// was icons[i].transform.localPosition and icons[i].transform.localScale
+                icons[i].transform.localPosition = Vector3.Lerp(origPos[i], positions[i], time / duration);
+                icons[i].transform.localScale = Vector3.Lerp(OrigScale[i], currentScale[i], time / duration);
 
             }
             time += Time.deltaTime;

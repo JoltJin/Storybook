@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum dialogueEmotes
 {
@@ -22,9 +23,19 @@ public enum CutsceneCharacter
     {
         Talking,
         Walking,
-        Both
+        SceneChange,
+        Both_Unused
     }
 
+/// <summary>
+/// the name of the scene's file itself
+/// </summary>
+public enum CutsceneSceneType
+{
+    Battle_Scene
+    //Forest,
+    //Forest_Battle
+}
 public enum CutsceneWalkSpeed
 {
     Slow = 2,
@@ -49,6 +60,8 @@ public class CutsceneFullController : CutsceneTester
     [SerializeField] private CutsceneDialogue[] cutsceneDialogue = new CutsceneDialogue[1];
 
     [SerializeField] private CutsceneLocations[] cutsceneLocations = new CutsceneLocations[1];
+
+    [SerializeField] private CutsceneSceneChange[] cutsceneSceneChange = new CutsceneSceneChange[1];
 
     private Action returnAction;
     private MonoBehaviour mono;
@@ -80,10 +93,12 @@ public class CutsceneFullController : CutsceneTester
                 {
                     action = NextCutscene;
                 }
-                Debug.Log(slot);
                 cutsceneLocations[slot].CutsceneInteract(myMonoBehaviour, action);
                 break;
-            case CutsceneType.Both:
+            case CutsceneType.SceneChange:
+                cutsceneSceneChange[slot].CutsceneInteract(myMonoBehaviour, returnAction);
+                break;
+            case CutsceneType.Both_Unused:
                 break;
         }
         slot = 0;
@@ -93,6 +108,39 @@ public class CutsceneFullController : CutsceneTester
     {
         slot++;
         CutsceneInteract(mono, returnAction);
+    }
+}
+[Serializable]
+public class CutsceneSceneChange : CutsceneTester
+{
+    [HideInInspector] public bool isUnfolded;
+    [HideInInspector] public bool isBattleScene;
+    [SerializeField] private EnemyPoolScript enemyPool;
+    [SerializeField] private CutsceneSceneType SceneToLoad;
+
+    public override void CutsceneInteract(MonoBehaviour myMonoBehaviour, Action nextSegment)
+    {
+        myMonoBehaviour.StartCoroutine(SceneController(nextSegment, myMonoBehaviour));
+    }
+
+    IEnumerator SceneController(Action next, MonoBehaviour myMonoBehaviour)
+    {
+        Time.timeScale = 0;
+
+        BattleController.AddParticipant(PlayerData.party[0].charName.ToString(), BattleController.CurrentTurn.Main, PlayerData.party[0].maxHealth, PlayerData.party[0].currentHealth, PlayerData.party[0].baseDamage, PlayerData.party[0].defense);
+
+        if (PlayerData.party.Count > 1)
+        {
+            BattleController.AddParticipant(PlayerData.party[1].charName.ToString(), BattleController.CurrentTurn.Partner, PlayerData.party[1].maxHealth, PlayerData.party[1].currentHealth, PlayerData.party[1].baseDamage, PlayerData.party[1].defense);
+        }
+
+        for (int i = 0; i <= enemyPool.enemy.Length - 1; i++)
+        {
+            BattleController.AddParticipant(enemyPool.enemy[i].enemyName, BattleController.CurrentTurn.Enemy1 + i, enemyPool.enemy[i].maxHealth, enemyPool.enemy[i].maxHealth, enemyPool.enemy[i].baseAttack, enemyPool.enemy[i].baseDefense);
+        }
+
+        BookTransitionController.Instance.BattleTransition(SceneToLoad.ToString());
+        yield return new WaitForSeconds(1);
     }
 }
 [Serializable]
@@ -135,8 +183,8 @@ public class CutsceneDialogue : CutsceneTester
             {
                 yield return new WaitForSeconds(0.5f);
             }
-            TextboxController.Instance.SetPosition(GameObject.Find(dialogue[i].character.ToString()).transform, 1, GameObject.Find(dialogue[i].character.ToString()).GetComponentInParent<CharacterAnimator>());
-            TextboxController.Instance.SetText(dialogue[i].text, dialogue[i].ender);
+            //TextboxController.Instance.SetSize(TextboxType.Story/*GameObject.Find(dialogue[i].character.ToString()).transform*/, 1, GameObject.Find(dialogue[i].character.ToString()).GetComponentInParent<CharacterAnimator>());
+            TextboxController.Instance.SetText(dialogue[i].text, dialogue[i].ender, TextboxType.Story, 1, GameObject.Find(dialogue[i].character.ToString()).GetComponentInParent<CharacterAnimator>(), GameObject.Find(dialogue[i].character.ToString()).transform);
 
             while (!TextboxController.Instance.isFinished())
             {
@@ -166,48 +214,84 @@ public class CutsceneDialoguePairing
 public class CutsceneLocations : CutsceneTester
 {
     [HideInInspector] public bool isUnfolded;
-    [SerializeField] public CutsceneMovementPairing[] locations = new CutsceneMovementPairing[1];
-
+    [SerializeField] public CutsceneMovementPairing[] movementCombo = new CutsceneMovementPairing[1];
+    private List<CutsceneCharacter> charactersUsed = new List<CutsceneCharacter>();
     public override void CutsceneInteract(MonoBehaviour myMonoBehaviour, Action next)
     {
-        Debug.Log(slot);
-        myMonoBehaviour.StartCoroutine(MoveCharacter(GameObject.Find(locations[slot].character.ToString()), (int)locations[slot].speedToLocation, next, myMonoBehaviour));
+        charactersUsed.Clear();
+        for (int i = 0; i < movementCombo.Length; i++)
+        {
+            if (charactersUsed.Count == 0)
+            {
+                myMonoBehaviour.StartCoroutine(MoveCharacter(GameObject.Find(movementCombo[i].character.ToString()), (int)movementCombo[i].speedToLocation, next, myMonoBehaviour, i));
+            }
+            else
+            {
+                for (int j = 0; j < charactersUsed.Count; j++)
+                {
+                    if (charactersUsed[j] == movementCombo[i].character)
+                    {
+                        Debug.Log("You have " + charactersUsed[j].ToString() + " moving multiple times at once!");
+                        return;
+                    }
+                    else if(j == charactersUsed.Count -1)
+                    {
+                        myMonoBehaviour.StartCoroutine(MoveCharacter(GameObject.Find(movementCombo[i].character.ToString()), (int)movementCombo[i].speedToLocation, next, myMonoBehaviour, i));
+                    }
+                }
+            }
+
+            charactersUsed.Add(movementCombo[i].character);
+        }
+
+        //myMonoBehaviour.StartCoroutine(MoveCharacter(GameObject.Find(movementCombo[slot].character.ToString()), (int)movementCombo[slot].speedToLocation, next, myMonoBehaviour));
     }
 
 
-    IEnumerator MoveCharacter(GameObject characterToMove, float walkingSpeed, Action next, MonoBehaviour myMonoBehaviour)
+    IEnumerator MoveCharacter(GameObject characterToMove, float walkingSpeed, Action next, MonoBehaviour myMonoBehaviour, int slotNum)
     {
-        while (characterToMove.transform.position.x != locations[slot].location.x && characterToMove.transform.position.z != locations[slot].location.z)
+        while (characterToMove.transform.position.x != movementCombo[slotNum].location.x && characterToMove.transform.position.z != movementCombo[slotNum].location.z)
         {
-            Vector3 direction = (locations[slot].location - characterToMove.transform.position);
+            Vector3 direction = (movementCombo[slotNum].location - characterToMove.transform.position);
             direction = new Vector3(direction.x, characterToMove.transform.position.y, direction.z);
 
             characterToMove.GetComponent<CharacterController>().Move(walkingSpeed * Time.deltaTime * direction.normalized);
-            characterToMove.GetComponent<PlayerController>().BasicAnimations(locations[slot].location.x - characterToMove.transform.position.x, locations[slot].location.z - characterToMove.transform.position.z);
+            characterToMove.GetComponent<CharacterAnimator>().BasicAnimations(movementCombo[slotNum].location.x - characterToMove.transform.position.x, movementCombo[slotNum].location.z - characterToMove.transform.position.z);
 
-            if (Mathf.Abs(locations[slot].location.x - characterToMove.transform.position.x) < 0.01f && Mathf.Abs(locations[slot].location.z - characterToMove.transform.position.z) < 0.01f)
+            if (Mathf.Abs(movementCombo[slotNum].location.x - characterToMove.transform.position.x) < 0.01f && Mathf.Abs(movementCombo[slotNum].location.z - characterToMove.transform.position.z) < 0.01f)
             {
-                characterToMove.transform.position = new Vector3(locations[slot].location.x, characterToMove.transform.position.y, locations[slot].location.z);
+                characterToMove.transform.position = new Vector3(movementCombo[slotNum].location.x, characterToMove.transform.position.y, movementCombo[slotNum].location.z);
             }
 
             yield return null;
         }
 
-        characterToMove.GetComponent<PlayerController>().BasicAnimations(0, 0);
+        characterToMove.GetComponent<CharacterAnimator>().BasicAnimations(0, 0);
 
-        slot++;
-        if (slot <= locations.Length - 1)
+        for (int i = 0; i < charactersUsed.Count; i++)
         {
-            yield return new WaitForSeconds(1);
-            myMonoBehaviour.StartCoroutine(MoveCharacter(GameObject.Find(locations[slot].character.ToString()), (int)locations[slot].speedToLocation, next, myMonoBehaviour));
+            if (charactersUsed[i] == movementCombo[slotNum].character)
+            {
+                Debug.Log("Removed " + charactersUsed[i]);
+                charactersUsed.RemoveAt(i);
+                break;
+            }
+        }
+        Debug.Log(charactersUsed.Count);
+        //slot++;
+        if (charactersUsed.Count == 0)
+        {
+            Debug.Log("Walking Combo is finished");
+            next();
+            //slot = 0;
             yield break;
+            
         }
         else
         {
-            Debug.Log("Walking Finished with slot " + slot);
-            next();
-            slot = 0;
-            yield break;
+            //yield return new WaitForSeconds(1);
+            ////myMonoBehaviour.StartCoroutine(MoveCharacter(GameObject.Find(movementCombo[slot].character.ToString()), (int)movementCombo[slot].speedToLocation, next, myMonoBehaviour));
+            //yield break;
         }
 
 

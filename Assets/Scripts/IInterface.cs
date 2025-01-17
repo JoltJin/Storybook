@@ -7,4 +7,6 @@ public interface IInterface
     void Interact(Transform interactorTransform);
 
     Transform GetTransform();
+
+    float GetIndicatorHeight();
 }

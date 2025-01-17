@@ -8,33 +8,38 @@ public class PlayerInteract : MonoBehaviour
     [SerializeField] private GameObject indicator;
 
     private float interactRange = .25f;
+
+    IInterface interactable = null;
     // Update is called once per frame
     void Update()
     {
-        FindInteractableObject();
-        if (Input.GetKeyDown(KeyCode.X) && !PlayerController.isBusy)
-        {
-            Collider[] colliderArray = Physics.OverlapSphere(transform.position, interactRange);
-
-            foreach(Collider collider in colliderArray) 
+            FindInteractableObject();
+            if (Input.GetKeyDown(KeyCode.X) && !PlayerController.isBusy && interactable != null)
             {
-                if(collider.TryGetComponent(out IInterface interact))
-                {
-                    interact.Interact(transform);
-                }
-            } 
+            //Collider[] colliderArray = Physics.OverlapSphere(transform.position, interactRange);
+
+            //foreach (Collider collider in colliderArray)
+            //{
+            //    if (collider.TryGetComponent(out IInterface interact))
+            //    {
+            //        interact.Interact(transform);
+            //    }
+            //}
+
+            interactable.Interact(transform);
         }
     }
 
-    private void ShowIndicator(Transform trans)
+    private void ShowIndicator(Transform trans, float indicatorHeight)
     {
-        indicator.transform.position = trans.position + Vector3.up * 1f;
+        indicator.transform.position = trans.position + Vector3.up * indicatorHeight;
         indicator.SetActive(true);
     }
 
     private void HideIndicator()
     {
         indicator.SetActive(false);
+        interactable = null;
     }
 
     public void FindInteractableObject()
@@ -67,9 +72,10 @@ public class PlayerInteract : MonoBehaviour
             }
         }
 
-        if(closestInteract != null)
+        if (closestInteract != null && !PlayerController.isBusy)
         {
-            ShowIndicator(closestInteract.GetTransform());
+            ShowIndicator(closestInteract.GetTransform(), closestInteract.GetIndicatorHeight());
+            interactable = closestInteract;
         }
         else
         {

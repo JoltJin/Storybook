@@ -11,6 +11,9 @@ public class NPCInteract : MonoBehaviour, IInterface, CharacterAnimator
     [SerializeField] private Animator anim;
     [SerializeField] private Animator spriteAnim;
     [HideInInspector] public bool FacingRight { get; private set; } = true;
+
+    [SerializeField]float indicatorHeight = 1;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -28,8 +31,8 @@ public class NPCInteract : MonoBehaviour, IInterface, CharacterAnimator
     /// <param name="trans">Position to determine facing direction</param>
     public void Interact(Transform trans)
     {
-        TextboxController.Instance.SetPosition(transform, 1, GetComponentInParent<CharacterAnimator>());
-        TextboxController.Instance.SetText(text, ender);
+        //TextboxController.Instance.SetSize(TextboxType.Story, 1, GetComponentInParent<CharacterAnimator>());
+        TextboxController.Instance.SetText(text, ender, TextboxType.Story, 1, GetComponentInParent<CharacterAnimator>(), transform);
     }
 
     public Transform GetTransform()
@@ -165,5 +168,10 @@ public class NPCInteract : MonoBehaviour, IInterface, CharacterAnimator
         BasicAnimations(0, 0);
         yield return new WaitForSeconds(.4f);
         spriteAnim.speed = 1;
+    }
+
+    public float GetIndicatorHeight()
+    {
+        return indicatorHeight;
     }
 }

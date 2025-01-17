@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -63,13 +65,14 @@ public class EnemyAIBase : MonoBehaviour
             agent.speed = walkSpeed;
         }
 
-        if(facingRight && agent.destination.x < transform.position.x || !facingRight && agent.destination.x > transform.position.x)
-        {
-            FlipAnimation();
-        }
+        
 
-        if(agent.destination.x != transform.position.x || agent.destination.z != transform.position.z)
+        if(MathF.Abs(agent.destination.x - transform.position.x) > 0.01f || MathF.Abs(agent.destination.z - transform.position.z) > 0.01f)
         {
+            if (facingRight && agent.destination.x < transform.position.x || !facingRight && agent.destination.x > transform.position.x)
+            {
+                FlipAnimation();
+            }
             SpriteAnimation(true);
         }
         else
@@ -80,8 +83,8 @@ public class EnemyAIBase : MonoBehaviour
 
     IEnumerator SetNextLocation()
     {
-        animCounter = Random.Range(minAnimLoops, maxAnimLoops + 1);
-        waypointNum = Random.Range(0, waypoints.Length + 1);
+        animCounter = UnityEngine.Random.Range(minAnimLoops, maxAnimLoops + 1);
+        waypointNum = UnityEngine.Random.Range(0, waypoints.Length + 1);
         yield return new WaitForSeconds(.001f);
 
         if (waypointNum == waypoints.Length)

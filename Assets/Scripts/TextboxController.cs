@@ -4,6 +4,8 @@ using UnityEngine;
 using TMPro;
 using Unity.Mathematics;
 using System;
+using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public enum textEnder
 {
@@ -12,6 +14,11 @@ public enum textEnder
     Faylee,
     Willow,
     Kael,
+}
+public enum TextboxType
+{
+    Small,
+    Story,
 }
 public class TextboxController : MonoBehaviour
 {
@@ -27,8 +34,8 @@ public class TextboxController : MonoBehaviour
 
     public static TextboxController Instance;
 
-    [SerializeField] private TextMeshPro text;
-    [SerializeField] private Animator anim;
+    [SerializeField] private TextMeshProUGUI textbox;
+    //[SerializeField] private Animator anim;
     [SerializeField] private List<AudioClip> normalTalking = new List<AudioClip>();
     [SerializeField] private List<AudioClip> endSentence = new List<AudioClip>();
     [SerializeField] private List<AudioClip> endTalking = new List<AudioClip>();
@@ -45,10 +52,31 @@ public class TextboxController : MonoBehaviour
 
     private CharacterAnimator characterAnimator = null;
 
+    private TextboxType textboxType;
+
+    [SerializeField] private RectTransform m_parent;
+    [SerializeField] private Camera m_camera;
+
+    private float originalTextboxHeight,
+                currentTextboxHeight;
+    
+    bool isChangingSize = false;
+    private int lineCounter;
+    private UnityEngine.UI.Image textboxImage;
+
+    [SerializeField] private GameObject textboxArrow, textboxBounds;
+    [SerializeField] private Sprite talkingLeftOfBox, talkingRightOfBox;
+    private Transform characterTalking;
+    [SerializeField] Camera uiCamera;
     // Start is called before the first frame update
     void Start()
     {
         Instance = this;
+        textboxImage = GetComponent< UnityEngine.UI.Image >();
+        textbox.text = "";
+        textboxImage.color = new Color(textboxImage.color.r, textboxImage.color.g, textboxImage.color.b, 0);
+        originalTextboxHeight = currentTextboxHeight = GetComponent<RectTransform>().sizeDelta.y;
+        textboxArrow.SetActive(false);
     }
 
     private void StartTalkingSound()
@@ -86,7 +114,171 @@ public class TextboxController : MonoBehaviour
         characterAnimator.StopTalking();
     }
 
+    private void CheckVisibleLineCount(int lineCount)
+    {
+        //string holder = textbox.text;
+        //string secondHolder = "";
+        //string[] newText = holder.Split(" ");
+        //bool endOfText = false;
+        //for (int i = 0; i < newText.Length; i++)
+        //{
+        //    if (newText[i].Contains("<color=#00000000>"))
+        //    {
+        //        for (int j = 0; j <= i; j++)
+        //        {
+        //            if (i == j)
+        //            {
+        //                secondHolder += newText[j] + "</color>";
+        //                break;
+
+        //            }
+        //            else
+        //            {
+        //                secondHolder += newText[j] + " ";
+        //            }
+        //        }
+        //        break;
+        //    }
+        //    //else if (!newText[i].Contains("<color=#00000000>") && i == newText.Length - 2)
+        //    //{
+        //    //    endOfText = true;
+        //    //}
+        //}
+        //textbox.text = secondHolder;
+        //textbox.ForceMeshUpdate();
+        //int lineCount = 0;
+        //lineCount = textbox.textInfo.lineCount;
+        //Debug.Log(lineCount);
+        //textbox.text = holder;
+        int increaseAmount = 0;
+        lineCounter = lineCount;
+        if (lineCount > 3)
+        {
+            increaseAmount = 20 * (lineCount - 3);
+            currentTextboxHeight = originalTextboxHeight + increaseAmount;
+
+            if (!isChangingSize)
+            {
+                StartCoroutine(ChangeTextboxSize(increaseAmount, .45f));
+            }
+        }
+        else if (lineCount == 1)
+        {
+            if (currentTextboxHeight != originalTextboxHeight)
+            {
+                StartCoroutine(ChangeTextboxSize(0, .45f));
+            }
+        }
+        //GetComponent<RectTransform>().sizeDelta = new Vector2(GetComponent<RectTransform>().sizeDelta.x, currentTextboxHeight);
+        //transform.localPosition = new Vector3(transform.localPosition.x, 157.553f - increaseAmount/2f, transform.localPosition.z);
+    }
+
     // Update is called once per frame
+    IEnumerator ChangeTextboxSize(int height, float time)
+    {
+        isChangingSize = true;
+        currentTextboxHeight = originalTextboxHeight + height;
+        Vector2 originalSize = GetComponent<RectTransform>().sizeDelta;
+        //Vector3 originalPosition = transform.localPosition;
+        float elapsedTime = 0f;
+        while (elapsedTime < time)
+        {
+            GetComponent<RectTransform>().sizeDelta = Vector2.Lerp(originalSize, new Vector2(GetComponent<RectTransform>().sizeDelta.x, currentTextboxHeight), elapsedTime / time);
+            //transform.localPosition = Vector3.Lerp(originalPosition, new Vector3(transform.localPosition.x, originalPosition.y - height / 2f, transform.localPosition.z), elapsedTime / time);
+
+            elapsedTime += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+
+        GetComponent<RectTransform>().sizeDelta = new Vector2(GetComponent<RectTransform>().sizeDelta.x, currentTextboxHeight);
+        //transform.localPosition = new Vector3(transform.localPosition.x, originalPosition.y - height / 2f, transform.localPosition.z);
+
+        isChangingSize = false;
+    }
+    void KeepFullyOnScreen()
+    {
+        float arrowY = textboxArrow.transform.position.y;
+        RectTransform textboxArrowRectTransform = textboxArrow.GetComponent<RectTransform>();
+        Vector3 targetPositionScreenPoint = Camera.main.WorldToScreenPoint(characterTalking.position);
+        
+        Vector3 cappedTargetScreenPosition = targetPositionScreenPoint;
+        Debug.Log(cappedTargetScreenPosition);
+        if (cappedTargetScreenPosition.x <= (Screen.width/2) -textboxBounds.GetComponent<RectTransform>().sizeDelta.x/2)
+            cappedTargetScreenPosition.x = (Screen.width / 2) - textboxBounds.GetComponent<RectTransform>().sizeDelta.x / 2;
+        if (cappedTargetScreenPosition.x >= (Screen.width / 2) + textboxBounds.GetComponent<RectTransform>().sizeDelta.x / 2)
+            cappedTargetScreenPosition.x = (Screen.width / 2) - textboxBounds.GetComponent<RectTransform>().sizeDelta.x / 2;
+
+
+        if(cappedTargetScreenPosition.x > Screen.width / 2)
+        {
+            textboxArrow.GetComponent<UnityEngine.UI.Image>().sprite = talkingRightOfBox;
+        }
+        else
+            {
+            textboxArrow.GetComponent<UnityEngine.UI.Image>().sprite = talkingLeftOfBox;
+        }
+        Vector3 pointerWorldPosition = m_camera.ScreenToWorldPoint(cappedTargetScreenPosition);
+        textboxArrowRectTransform.position = pointerWorldPosition;
+        textboxArrowRectTransform.localPosition = new Vector3 (textboxArrowRectTransform.localPosition.x, 0, textboxArrowRectTransform.position.z);
+    }
+
+    IEnumerator MoveTextboxArrow()
+    {
+        Vector2 anchoredPos;
+        //RectTransformUtility.ScreenPointToLocalPointInRectangle(textboxArrow.GetComponent<RectTransform>(), characterTalking.position, m_camera, out anchoredPos);
+        //textboxArrow.GetComponent<RectTransform>().anchoredPosition = 
+            KeepFullyOnScreen();
+        yield return new WaitForEndOfFrame();
+        StartCoroutine(MoveTextboxArrow());
+    }
+    IEnumerator OpenTextboxAnimation(float time)
+    {
+        textbox.text = "";
+        Vector2 originalSize = GetComponent<RectTransform>().sizeDelta;
+        Color originalColor = textboxImage.color;
+        float elapsedTime = 0f;
+
+        GetComponent<RectTransform>().sizeDelta = new Vector2(75, 75);
+        while (elapsedTime < time)
+        {
+            GetComponent<RectTransform>().sizeDelta = Vector2.Lerp(new Vector2(75, 75),originalSize, elapsedTime / time);
+            textboxImage.color = Color.Lerp(originalColor, new Color(textboxImage.color.r, textboxImage.color.g, textboxImage.color.b, 1), elapsedTime / time);
+            Debug.Log(GetComponent<RectTransform>().sizeDelta);
+            elapsedTime += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+
+        textboxImage.color = new Color(textboxImage.color.r, textboxImage.color.g, textboxImage.color.b, 1);
+        GetComponent<RectTransform>().sizeDelta = originalSize;
+
+        isOpen = true;
+        textWriterSingle = TextWriter.AddWriter_Static(textbox, message[messageNum], 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound, CheckVisibleLineCount);
+
+        StartCoroutine(MoveTextboxArrow());
+    }
+
+    IEnumerator CloseTextboxAnimation(float time)
+    {
+        textbox.text = "";
+        Vector2 originalSize = GetComponent<RectTransform>().sizeDelta;
+        Color originalColor = textboxImage.color;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < time)
+        {
+            GetComponent<RectTransform>().sizeDelta = Vector2.Lerp(originalSize, new Vector2(75, 75), elapsedTime / time);
+            textboxImage.color = Color.Lerp(originalColor, new Color(textboxImage.color.r, textboxImage.color.g, textboxImage.color.b, 0), elapsedTime / time);
+            elapsedTime += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+
+        textboxImage.color = new Color(textboxImage.color.r, textboxImage.color.g, textboxImage.color.b, 0);
+        GetComponent<RectTransform>().sizeDelta = originalSize;
+
+        isOpen = false;
+
+        PlayerController.isBusy = false;
+    }
     void Update()
     {
         if (isOpen)
@@ -95,14 +287,14 @@ public class TextboxController : MonoBehaviour
             {
                 if (textWriterSingle != null && textWriterSingle.IsActive())
                 {
-                    textWriterSingle.WriteAllAndDestroy();
+                    //textWriterSingle.WriteAllAndDestroy();
 
                     //textWriterSingle = null;
                 }
                 else if (textWriterSingle == null)
                 {
 
-                    textWriterSingle = TextWriter.AddWriter_Static(text, message[messageNum], 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound);
+                    textWriterSingle = TextWriter.AddWriter_Static(textbox, message[messageNum], 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound, CheckVisibleLineCount);
                 }
                 else if (!textWriterSingle.IsActive())
                 {
@@ -117,7 +309,7 @@ public class TextboxController : MonoBehaviour
                     {
                         messageNum++;
                         addedEnding = false;
-                        textWriterSingle = TextWriter.AddWriter_Static(text, message[messageNum], 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound);
+                        textWriterSingle = TextWriter.AddWriter_Static(textbox, message[messageNum], 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound, CheckVisibleLineCount);
                     }
                 }
             }
@@ -234,19 +426,24 @@ public class TextboxController : MonoBehaviour
 
     IEnumerator EndingMarkFlash()
     {
-        text.text = message[messageNum] + endingMark + visibleEnder;
+        string indenter = "";
+        for (int i = lineCounter; i < 3; i++)
+        {
+            indenter += "\n";
+        }
+        textbox.text = message[messageNum] + indenter + endingMark + visibleEnder;
         yield return new WaitForSeconds(.5f);
-        text.text = message[messageNum] + endingMark + invisibleEnder;
+        textbox.text = message[messageNum] + indenter + endingMark + invisibleEnder;
         yield return new WaitForSeconds(.5f);
         StartCoroutine(EndingMarkFlash());
     }
 
-    public void SetPosition(Transform pos, float height, CharacterAnimator characterAnimator)
+    public void SetSize(TextboxType boxType, float height, CharacterAnimator characterAnimator)
     {
-
+        textboxType = boxType;
         PlayerController.isBusy = true;
 
-        transform.SetParent(pos.transform);
+        //transform.SetParent(pos.transform);
         this.characterAnimator = characterAnimator;
 
         if(isOpen)
@@ -261,9 +458,9 @@ public class TextboxController : MonoBehaviour
             Debug.Log("Using default height");
         }
 
-        transform.position = pos.position + Vector3.up * height;
+        //transform.position = pos.position + Vector3.up * height;
 
-        anim.SetTrigger("Open");
+        //anim.SetTrigger("Open");
 
         isOpen = true;
     }
@@ -279,8 +476,48 @@ public class TextboxController : MonoBehaviour
             return false;
         }
     }
-    public void SetText(List<string> txt, textEnder ender)
+
+    private void ResetTextbox()
     {
+        textboxArrow.SetActive(true);
+        currentTextboxHeight = originalTextboxHeight;
+        textbox.text = "";
+        Vector2 anchoredPos;
+        RectTransform boxPos = GetComponent<RectTransform>();
+        boxPos.sizeDelta = new Vector2(boxPos.sizeDelta.x, originalTextboxHeight);
+        Vector3 textboxOffset = new Vector3(Screen.width/2, Screen.height * (4.5f/10f), 1);// distance of middle of text box from the top
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(m_parent, textboxOffset, m_camera, out anchoredPos);
+        boxPos.anchoredPosition = anchoredPos;
+
+        StartCoroutine(OpenTextboxAnimation(.4f));
+    }
+
+    public void SetText(List<string> txt, textEnder ender, TextboxType boxType, float height, CharacterAnimator characterAnimator, Transform character)
+    {
+        textboxType = boxType;
+        PlayerController.isBusy = true;
+
+        //transform.SetParent(pos.transform);
+        this.characterAnimator = characterAnimator;
+        characterTalking = character.transform;
+
+        if (isOpen)
+        {
+            //CloseTextbox();
+            return;
+        }
+
+        if (height == 0)
+        {
+            height = 1.25f;
+            Debug.Log("Using default height");
+        }
+
+        //transform.position = pos.position + Vector3.up * height;
+
+        //anim.SetTrigger("Open");
+
+
         message = txt;
         
         messageNum = 0;
@@ -310,20 +547,22 @@ public class TextboxController : MonoBehaviour
         //Hi there <sprite name="Agatha" color=#FFFFFF00> set it to transparent
         endingMark =  finisher;
 
-        textWriterSingle = TextWriter.AddWriter_Static(text, message[messageNum], 0.05f, true, true, StopTalkingSound, EndSentenceSound, StartTalkingSound, EndTextboxSound);
+        
+        ResetTextbox();
     }
     
     private void CloseTextbox()
     {
-        anim.SetTrigger("Close");
+        //anim.SetTrigger("Close");
         StopAllCoroutines();
-        isOpen = false;
-        StartCoroutine(TextboxDelay());
+        textboxArrow.SetActive(false);
+        StartCoroutine(CloseTextboxAnimation(.4f));
+        //StartCoroutine(TextboxDelay());
     }
 
-    IEnumerator TextboxDelay()
-    {
-        yield return new WaitForEndOfFrame();
-        PlayerController.isBusy = false;
-    }
+    //IEnumerator TextboxDelay()
+    //{
+    //    yield return new WaitForEndOfFrame();
+    //    PlayerController.isBusy = false;
+    //}
 }

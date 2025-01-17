@@ -1287,10 +1287,6 @@ public class BattleController : MonoBehaviour
     {
         currentTurn++;
 
-        if (currentTurn > CurrentTurn.Enemy4)
-        {
-            currentTurn = CurrentTurn.Main;
-
             int enemiesAlive = 0;
 
             for (int i = 0; i < participants.Count; i++)
@@ -1300,6 +1296,7 @@ public class BattleController : MonoBehaviour
                 {
                     enemiesAlive++;
                 }
+                Debug.Log(enemiesAlive);
             }
 
             if (enemiesAlive < 1)
@@ -1307,6 +1304,10 @@ public class BattleController : MonoBehaviour
                 StartCoroutine(PostBattle());
                 yield break;
             }
+        if (currentTurn > CurrentTurn.Enemy4)
+        {
+            currentTurn = CurrentTurn.Main;
+
         }
 
         

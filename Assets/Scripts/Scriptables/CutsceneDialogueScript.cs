@@ -36,8 +36,8 @@ public class CutsceneDialogueScript : CutsceneInterface
 
         yield return new WaitForSeconds(0.4f);
 
-        TextboxController.Instance.SetPosition(GameObject.Find(dialogue[slot].character.ToString()).transform, 1, GameObject.Find(dialogue[slot].character.ToString()).GetComponentInParent<CharacterAnimator>());
-        TextboxController.Instance.SetText(dialogue[slot].text, dialogue[slot].ender);
+        //TextboxController.Instance.SetSize(TextboxType.Story/*GameObject.Find(dialogue[slot].character.ToString()).transform*/, 1, GameObject.Find(dialogue[slot].character.ToString()).GetComponentInParent<CharacterAnimator>());
+        TextboxController.Instance.SetText(dialogue[slot].text, dialogue[slot].ender, TextboxType.Story, 1, GameObject.Find(dialogue[slot].character.ToString()).GetComponentInParent<CharacterAnimator>(), GameObject.Find(dialogue[slot].character.ToString()).transform);
 
         while (!TextboxController.Instance.isFinished())
         {
