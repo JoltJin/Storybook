@@ -199,24 +199,23 @@ public class TextboxController : MonoBehaviour
     {
         float arrowY = textboxArrow.transform.position.y;
         RectTransform textboxArrowRectTransform = textboxArrow.GetComponent<RectTransform>();
-        Vector3 targetPositionScreenPoint = Camera.main.WorldToScreenPoint(characterTalking.position);
-        
-        Vector3 cappedTargetScreenPosition = targetPositionScreenPoint;
-        Debug.Log(cappedTargetScreenPosition);
+        Vector3 targetPositionScreenPoint = Camera.main.WorldToScreenPoint(characterTalking.position + (Vector3.right/3));
+
+        if (targetPositionScreenPoint.x <= (Screen.width / 2))//checks where character is on the screen then adjusts placement of arrow to the side and flips if needed
+        {
+            textboxArrow.GetComponent<UnityEngine.UI.Image>().sprite = talkingLeftOfBox;
+            targetPositionScreenPoint = Camera.main.WorldToScreenPoint(characterTalking.position + (Vector3.right / 3));
+        }else
+        {
+            textboxArrow.GetComponent<UnityEngine.UI.Image>().sprite = talkingRightOfBox;
+            targetPositionScreenPoint = Camera.main.WorldToScreenPoint(characterTalking.position + (Vector3.left / 3));
+        }
+            Vector3 cappedTargetScreenPosition = targetPositionScreenPoint;
         if (cappedTargetScreenPosition.x <= (Screen.width/2) -textboxBounds.GetComponent<RectTransform>().sizeDelta.x/2)
             cappedTargetScreenPosition.x = (Screen.width / 2) - textboxBounds.GetComponent<RectTransform>().sizeDelta.x / 2;
         if (cappedTargetScreenPosition.x >= (Screen.width / 2) + textboxBounds.GetComponent<RectTransform>().sizeDelta.x / 2)
-            cappedTargetScreenPosition.x = (Screen.width / 2) - textboxBounds.GetComponent<RectTransform>().sizeDelta.x / 2;
+            cappedTargetScreenPosition.x = (Screen.width / 2) + textboxBounds.GetComponent<RectTransform>().sizeDelta.x / 2;
 
-
-        if(cappedTargetScreenPosition.x > Screen.width / 2)
-        {
-            textboxArrow.GetComponent<UnityEngine.UI.Image>().sprite = talkingRightOfBox;
-        }
-        else
-            {
-            textboxArrow.GetComponent<UnityEngine.UI.Image>().sprite = talkingLeftOfBox;
-        }
         Vector3 pointerWorldPosition = m_camera.ScreenToWorldPoint(cappedTargetScreenPosition);
         textboxArrowRectTransform.position = pointerWorldPosition;
         textboxArrowRectTransform.localPosition = new Vector3 (textboxArrowRectTransform.localPosition.x, 0, textboxArrowRectTransform.position.z);
